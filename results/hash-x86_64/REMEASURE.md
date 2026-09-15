@@ -17,15 +17,19 @@ rows have been rerun on the publication host.
 Plonky2 FRI, Plonky3 WHIR, Flock, and Akita retain their existing profiles.
 The changed `native_param` identities are the enforcement mechanism: importing
 the old JSONL against the repaired matrix must fail rather than relabel its
-timings. Rerun the full matrix with:
+timings. The runner refuses to overwrite an existing `records.jsonl`, so rerun
+the full matrix into a fresh directory:
 
 ```bash
-./scripts/hash-eval.sh run --out results/hash-x86_64
+./scripts/hash-eval.sh run --out results/hash-x86_64-repaired
 ```
 
 Then regenerate the reports only after every changed profile has fresh records:
 
 ```bash
 cargo run -p pcs-bench-runner --bin pcs-bench -- hash-eval compare \
-  results/hash-x86_64 --out-dir results/hash-x86_64
+  results/hash-x86_64-repaired --out-dir results/hash-x86_64-repaired
 ```
+
+Review the fresh reports, then replace the provisional publication dataset in a
+separate commit.
