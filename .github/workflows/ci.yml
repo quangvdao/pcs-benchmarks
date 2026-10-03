@@ -118,7 +118,7 @@ jobs:
 
       - name: Check representative locked configuration
         working-directory: third_party/rokoko
-        run: cargo +nightly-2026-09-03 check --locked --no-default-features --features incomplete-rexl,unsafe-sumcheck,p-26
+        run: cargo +nightly-2026-09-03 check --locked
 
   greyhound-adapter-source:
     name: Adapter · Greyhound source

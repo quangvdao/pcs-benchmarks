@@ -83,7 +83,7 @@ pub const GREYHOUND_REVISION: &str = "672e74100496f6ef698ba35e241cf7593e3d57af";
 pub const GREYHOUND_SIS_POLICY: &str = "l2-quantum128-adps16";
 
 /// Pinned RoKoKo revision.
-pub const ROKOKO_REVISION: &str = "26d07c73c54872b9e8d2b3200117a6a0a21b10ee";
+pub const ROKOKO_REVISION: &str = "5caba472334f7764645ea2c7c5d612353a670121";
 
 /// Identifies a lattice PCS implementation in the comparison harness.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
@@ -206,7 +206,7 @@ pub struct LatticeCase {
     pub field: FieldSpec,
     /// Native `log2 N` when the scheme has a matching instance.
     pub log2_n: Option<u32>,
-    /// Compile-time parameter name (`fp32-dense`, `p-26`, ...).
+    /// Native parameter name (`fp32-dense`, `p-26`, ...).
     pub native_param: Option<&'static str>,
     /// Why `log2_n` is `None`.
     pub unsupported_reason: Option<&'static str>,

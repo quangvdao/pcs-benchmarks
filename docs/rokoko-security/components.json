@@ -1,13 +1,13 @@
 {
-  "revision": "26d07c73c54872b9e8d2b3200117a6a0a21b10ee",
+  "revision": "5caba472334f7764645ea2c7c5d612353a670121",
   "scope": "Component calculations only; no overall security estimate or attack claim",
   "field_bits": 49.999999999996554,
   "quadratic_field_bits": 99.99999999999311,
   "paper_noninvertibility_heuristic_bits": 93.99999999999311,
   "raw_fixed_weight_support_bits": 103.30785278896298,
-  "empirical_accepted_support_bits": 102.397043390003,
+  "empirical_accepted_support_bits": 102.18306147761876,
   "sampler_trials": 10000,
-  "sampler_mean_attempts": 1.8801,
+  "sampler_mean_attempts": 2.1807,
   "profiles": {
     "p-22": {
       "overall_security_bits": null,

@@ -7,7 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 Q = 2**50 - 2687
 PHI = 128
-MEAN_ATTEMPTS = 1.8801  # 10,000 deterministic sampler trials, local aarch64 build
+MEAN_ATTEMPTS = 2.1807  # 10,000 deterministic sampler trials, x86-64 AVX-512 build
 # The pinned sampler reduces a uniform u64 modulo Q, rather than rejection sampling.
 P_MAX = ((2**64 + Q - 1) // Q) / 2**64
 profiles = {}
@@ -30,7 +30,7 @@ for name, index, height, width, ratio, projection_height, kind, rank in csv.read
     profiles.setdefault(name, []).append(row)
 
 result = {
-    "revision": "26d07c73c54872b9e8d2b3200117a6a0a21b10ee",
+    "revision": "5caba472334f7764645ea2c7c5d612353a670121",
     "scope": "Component calculations only; no overall security estimate or attack claim",
     "field_bits": math.log2(Q),
     "quadratic_field_bits": 2 * math.log2(Q),

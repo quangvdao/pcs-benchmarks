@@ -35,12 +35,12 @@ POINT_SEED_PATCH = """\
 """
 
 WITNESS_SEED_NEEDLE = """\
-    let witness = witness_sampler();
+    let witness = witness_sampler(witness_config);
 """
 
 WITNESS_SEED_PATCH = """\
     seed_rng(&format!("pcs-bench-witness-{workload_seed}"));
-    let witness = witness_sampler();
+    let witness = witness_sampler(witness_config);
 """
 
 COMMIT_NEEDLE = """\

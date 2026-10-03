@@ -239,13 +239,12 @@ fn attach_lattice_build_identity(case: &LatticeCase, provenance: &mut Provenance
             Ok(())
         }
         SchemeId::Rokoko => {
-            let feature = case.native_param.context("RoKoKo native feature")?;
             attach_build_identity(
                 provenance,
-                &root.join(format!("target/rokoko-{feature}/release/rokoko")),
+                &root.join("target/rokoko/release/rokoko"),
                 Some(&root.join("third_party/rokoko/Cargo.lock")),
                 &format!(
-                    "CARGO_TARGET_DIR=target/rokoko-{feature} cargo {ROKOKO_TOOLCHAIN} build --release --locked --features {feature}"
+                    "CARGO_TARGET_DIR=target/rokoko cargo {ROKOKO_TOOLCHAIN} build --release --locked"
                 ),
             )?;
             provenance.worker_compiler_version =
@@ -509,8 +508,10 @@ fn build_greyhound() -> Result<()> {
     Ok(())
 }
 
+/// The pinned RoKoKo binary carries every parameter set and selects one from its
+/// command-line argument, so one default-ring build serves all payloads.
 fn build_rokoko(case: &LatticeCase) -> Result<()> {
-    let feature = case.native_param.context("RoKoKo native feature")?;
+    case.native_param.context("RoKoKo native parameter set")?;
     let root = workspace_root()?;
     let rokoko_root = root.join("third_party/rokoko");
     if !rokoko_root.join("Cargo.toml").exists() {
@@ -519,17 +520,11 @@ fn build_rokoko(case: &LatticeCase) -> Result<()> {
             rokoko_root.display()
         );
     }
-    let target_dir = root.join(format!("target/rokoko-{feature}"));
+    let target_dir = root.join("target/rokoko");
     let status = Command::new("cargo")
         .current_dir(&rokoko_root)
-        .args([
-            ROKOKO_TOOLCHAIN,
-            "build",
-            "--release",
-            "--locked",
-            "--features",
-            feature,
-        ])
+        .args([ROKOKO_TOOLCHAIN, "build", "--release", "--locked"])
+        .env_remove("ROKOKO_RING")
         .env("CARGO_TARGET_DIR", &target_dir)
         .env("RAYON_NUM_THREADS", "1")
         .status()
@@ -748,7 +743,7 @@ fn run_greyhound(case: &LatticeCase, mem_limit: u64, seed: u64) -> Result<Worker
 }
 
 fn run_rokoko(case: &LatticeCase, mem_limit: u64, seed: u64) -> Result<WorkerOutput> {
-    let feature = case.native_param.context("RoKoKo native feature")?;
+    let param_set = case.native_param.context("RoKoKo native parameter set")?;
     let rokoko_root = workspace_root()?.join("third_party/rokoko");
     if !rokoko_root.join("Cargo.toml").exists() {
         bail!(
@@ -756,7 +751,7 @@ fn run_rokoko(case: &LatticeCase, mem_limit: u64, seed: u64) -> Result<WorkerOut
             rokoko_root.display()
         );
     }
-    let target_dir = workspace_root()?.join(format!("target/rokoko-{feature}"));
+    let target_dir = workspace_root()?.join("target/rokoko");
     let binary = target_dir.join("release/rokoko");
     if !binary.is_file() {
         bail!(
@@ -766,6 +761,7 @@ fn run_rokoko(case: &LatticeCase, mem_limit: u64, seed: u64) -> Result<WorkerOut
     }
     let output = limited_command(&rokoko_root, mem_limit)
         .arg(binary.as_os_str())
+        .arg(param_set)
         .env("MIMALLOC_PURGE_DELAY", "-1")
         .env("RAYON_NUM_THREADS", "1")
         .env("PCS_BENCH_SEED", seed.to_string())

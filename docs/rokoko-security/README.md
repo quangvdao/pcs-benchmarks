@@ -15,10 +15,12 @@ a demonstrated forgery, or a claim that an attack achieves the calculated costs.
 
 ## Scope and provenance
 
-- Benchmark records: `results/lattice-x86_64/records.jsonl`. All 55 RoKoKo records
-  name revision `26d07c73c54872b9e8d2b3200117a6a0a21b10ee`; each of p-22, p-24,
-  p-26, p-28, and p-30 has 11 records, including warmup.
-- Parameter extraction uses that vendored revision. The local executor includes
+- Benchmark records: `results/lattice-x86_64/records.jsonl`. Each RoKoKo record
+  names the revision it was measured at; each of p-22, p-24, p-26, p-28, and
+  p-30 has 11 records, including warmup. Records measured at the previous pin
+  `26d07c73` keep that revision until they are replaced.
+- Parameter extraction uses the current pin,
+  `5caba472334f7764645ea2c7c5d612353a670121`. The local executor includes
   the benchmark's existing timing/resource and seed changes. No vendor code was
   changed for this analysis.
 - [RoKoKo paper](https://eprint.iacr.org/2026/575.pdf), retrieved 2026-09-15,
@@ -26,8 +28,23 @@ a demonstrated forgery, or a claim that an attack achieves the calculated costs.
   `325817d34687378949cf2157e14baa178dbe177a0fe0f16bf11da24cfbfb3acf`.
   This is the retrieved paper version, not a claim that the paper and pinned
   implementation have identical parameter selection or sampling.
-- `profiles.csv` was extracted directly from P_MICRO, P_TINY, P_SMALL, P_MEDIUM,
-  and P_LARGE. No large witness or new timing matrix was required.
+- `profiles.csv` was extracted directly from the plain chains of the p-22, p-24,
+  p-26, p-28, and p-30 parameter sets in `src/instantiation.rs`. No large
+  witness or new timing matrix was required.
+- The extraction uses upstream's default ring spec (`rings/default.toml`:
+  degree 128, q = 2^50 - 2687, challenge weight 22, operator-norm bound 9.8, two
+  projection batches), which is what the benchmark builds.
+- Differences from the previous pin `26d07c73` that touch this analysis: the
+  operator-norm bound fell from 10.0 to 9.8, which changes the sampler
+  acceptance rate in section 2. In the first recursion level the
+  coarse-projection decomposition base changed from 2^9 to 2^8 for p-22 to p-28,
+  and the opening and coarse-projection commitment ranks from 2 to 4 for p-30;
+  `profiles.csv` lists top-level rounds only and is unchanged, as are the
+  component bounds in section 3.
+- Upstream now also ships ring specs with degree-4 slots, a 2^128 fold-challenge
+  space, and three projection batches (`rings/n128_d4.toml`,
+  `rings/n256_d4.toml`). They are opt-in, not the default, and not what the
+  benchmark measures. Nothing below applies to them.
 
 ## 1. What the paper claims
 
@@ -49,21 +66,21 @@ also not automatically an attack with the inverse of that event's probability.
 
 ## 2. The actual short-challenge sampler differs from the description
 
-Pinned [`short_challenge.rs`](https://github.com/lattice-arguments/rokoko/blob/26d07c73c54872b9e8d2b3200117a6a0a21b10ee/src/common/short_challenge.rs)
+Pinned [`short_challenge.rs`](https://github.com/lattice-arguments/rokoko/blob/5caba472334f7764645ea2c7c5d612353a670121/src/common/short_challenge.rs)
 uses exactly 22 nonzero +/-1 coefficients among 128 positions and rejects when
-the operator norm exceeds 10. The paper's Section 9.1 describes independent
+the operator norm exceeds 9.8 (both values are set in `rings/default.toml`). The paper's Section 9.1 describes independent
 ternary coefficients with zero probability 1/3. These are different distributions.
 
 Before norm rejection, the fixed-weight support size is:
 
     C(128, 22) * 2^22 = approximately 2^103.30785
 
-The pinned `repetition_rate()` function, run locally on aarch64 with its
-10,000 deterministic trials, returned **1.8801** attempts per accepted sample.
-This suggests an accepted support of approximately **2^102.39704**, assuming
+The pinned `repetition_rate()` function, run on x86-64 with its 10,000
+deterministic trials, returned **2.1807** attempts per accepted sample.
+This suggests an accepted support of approximately **2^102.18306**, assuming
 ideal independent XOF output. It is an empirical support estimate, not a
-rare-event estimate or proof. Earlier comments suggesting roughly 1.24 attempts
-and 103 accepted bits do not match this run.
+rare-event estimate or proof. The previous pin, with operator-norm bound 10.0,
+returned 1.8801 attempts (2^102.39704).
 
 A genuine subtractive challenge set (every distinct pair has invertible
 difference) in this product of quadratic fields can have at most q^2 elements:
@@ -76,7 +93,7 @@ does not provide that bound for fixed-weight, norm-rejected sampling.
 
 ## 3. A computable statistical component: fine-projection batching
 
-Pinned [`project_fine.rs`](https://github.com/lattice-arguments/rokoko/blob/26d07c73c54872b9e8d2b3200117a6a0a21b10ee/src/protocol/project_fine.rs)
+Pinned [`project_fine.rs`](https://github.com/lattice-arguments/rokoko/blob/5caba472334f7764645ea2c7c5d612353a670121/src/protocol/project_fine.rs)
 `sample_layers` samples tensor challenges in the **base field**. The verifier
 uses two independently sampled batches (`NOF_BATCHES = 2`).
 
@@ -133,8 +150,11 @@ assuming an identical paper-to-code dimension convention.
   factor. The actual initial widths are 64, 128, 128, 256, and 512 respectively.
   An approximate-set replacement must account for the actual distribution and
   the extractor's rewinding conditions.
-- **Lattice hardness:** the earlier p-22 smoke runs returned 123 through 168
-  rounded classical MATZOV estimates. They used honest-run-dependent norms.
+- **Lattice hardness:** p-22 smoke runs at the previous pin returned 123 through
+  168 rounded classical MATZOV estimates. They used honest-run-dependent norms,
+  and were not repeated at the current pin, where upstream lowered the
+  operator-norm bound, changed the first recursion level as listed above, and
+  uses extraction slack 6 instead of 8 in its `debug-hardness` check.
   A security claim must cover the verifier's full accepted norm bounds and all
   commitment layers, and justify use of generic SIS costs for the structured
   vanishing-SIS assumption. Other profiles have not been diagnosed here.
@@ -172,7 +192,9 @@ It consumes `profiles.csv` and reproduces `components.json`. Every profile's
 `overall_security_bits` is deliberately null.
 
 To regenerate the CSV, place `profile_dump.rs` in a temporary Cargo project's
-`src/main.rs`, with a dependency on the absolute path of `third_party/rokoko`:
+`src/main.rs`, copy `third_party/rokoko/src/instantiation.rs` next to it as
+`src/instantiation.rs` (the parameter sets live in the RoKoKo binary, not its
+library), and depend on the absolute path of `third_party/rokoko`:
 
     [package]
     name = "rokoko-security-analysis"
