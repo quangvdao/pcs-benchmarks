@@ -139,7 +139,7 @@ Do not mix machines, ISAs, or silently remap sizes.
 | WHIR (`p3-whir`) | https://github.com/Plonky3/Plonky3 | [`3acc8b70`](https://github.com/Plonky3/Plonky3/commit/3acc8b70e68d6c2afc03930700c26540bd47458d) |
 | Binius64 BaseFold | https://github.com/binius-zk/binius64 | [`6a179536`](https://github.com/binius-zk/binius64/commit/6a179536d90fcc76eeca0cee4e059f5e17efb459) |
 | Flock Ligerito | https://github.com/succinctlabs/flock | [`b684b125`](https://github.com/succinctlabs/flock/commit/b684b1258e4b1f202bec24afd660ace851b09e5e) |
-| WHIR (WorldFnd) | https://github.com/worldfnd/whir | [`8804e80e`](https://github.com/worldfnd/whir/commit/8804e80e8e890d01bb585f2bd5e5b564ac0fd80d) |
+| WHIR (WorldFnd) | https://github.com/worldfnd/whir | [`c03a4a51`](https://github.com/worldfnd/whir/commit/c03a4a512bd904562a22e14bc7b3064392448b99) |
 | BaseFold (SLOP) | https://github.com/succinctlabs/sp1 | [`edc07b68`](https://github.com/succinctlabs/sp1/commit/edc07b68c92c17e4fc8658c39a2ef8d9ea5d95dc) |
 
 Hash-eval adapters are isolated Cargo trees under `benchmarks/` so they do

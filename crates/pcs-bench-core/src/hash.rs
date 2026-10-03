@@ -64,7 +64,7 @@ pub const BINIUS64_REVISION: &str = "6a179536d90fcc76eeca0cee4e059f5e17efb459";
 pub const FLOCK_REVISION: &str = "b684b1258e4b1f202bec24afd660ace851b09e5e";
 
 /// Pinned [WorldFnd WHIR](https://github.com/worldfnd/whir) revision.
-pub const WORLDFND_WHIR_REVISION: &str = "8804e80e8e890d01bb585f2bd5e5b564ac0fd80d";
+pub const WORLDFND_WHIR_REVISION: &str = "c03a4a512bd904562a22e14bc7b3064392448b99";
 
 // Security labels in this benchmark use round-by-round (RBR) soundness:
 // eps_rbr = max_i eps_i, hence lambda_rbr = min_i(-log2(eps_i)). Do not sum

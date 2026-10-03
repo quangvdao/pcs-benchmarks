@@ -1055,7 +1055,7 @@ checksum = "ccf3ec651a847eb01de73ccad15eb7d99f80485de043efb2f370cd654f4ea44b"
 [[package]]
 name = "whir"
 version = "0.1.0"
-source = "git+https://github.com/worldfnd/whir?rev=8804e80e8e890d01bb585f2bd5e5b564ac0fd80d#8804e80e8e890d01bb585f2bd5e5b564ac0fd80d"
+source = "git+https://github.com/worldfnd/whir?rev=c03a4a512bd904562a22e14bc7b3064392448b99#c03a4a512bd904562a22e14bc7b3064392448b99"
 dependencies = [
  "ark-ff",
  "ark-serialize",
