@@ -105,7 +105,7 @@ These are reported security categories with different accounting scopes, not equ
 Machine, ISA, compiler, executable, lockfile, command, and timestamp provenance
 for this dataset are recorded with each observation. The infrastructure
 toolchain pin is Rust **1.95** (`rust-toolchain.toml`).
-Recorded runner command(s): `target/release/pcs-bench lattice-eval run --out /home/taghi/pcs-benchmarks-refresh.8wETs2/results-lattice-x86_64-final; target/release/pcs-bench lattice-eval run --scheme akita,akita-offload --payload 27,29,31,33,35 --runs 10 --warmups 1 --seed-mode vary --out results/lattice-x86_64`. The commands below are a template,
+Recorded runner command(s): `target/release/pcs-bench lattice-eval run --out results-lattice-x86_64-final; target/release/pcs-bench lattice-eval run --scheme akita,akita-offload --payload 27,29,31,33,35 --runs 10 --warmups 1 --seed-mode vary --out results/lattice-x86_64`. The commands below are a template,
 not reconstructed provenance.
 RoKoKo uses `rustup` **nightly-2026-09-03**. Workers are built before sampling;
 every timed execution is then a fresh process wrapped

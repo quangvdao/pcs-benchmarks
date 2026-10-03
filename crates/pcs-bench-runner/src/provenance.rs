@@ -25,7 +25,10 @@ pub(crate) fn capture() -> Result<Provenance> {
     Ok(Provenance {
         harness_revision: git_revision().unwrap_or_else(|| "uncommitted".into()),
         timestamp_utc: command_text("date", &["-u", "+%Y-%m-%dT%H:%M:%SZ"]),
-        run_command: Some(std::env::args().collect::<Vec<_>>().join(" ")),
+        run_command: Some(recorded_run_command(
+            std::env::args(),
+            std::env::current_dir().ok().as_deref(),
+        )),
         rustc_version: rustc_version()?,
         target: uname()?,
         cpu_model: cpu_model(),
@@ -351,9 +354,31 @@ fn memory_bytes() -> Option<u64> {
     None
 }
 
+/// The runner command as published in results. Absolute paths would leak the
+/// operator's home directory and scratch layout into a public repository, so
+/// each one is recorded relative to the working directory, or by its final
+/// component when it lies elsewhere.
+fn recorded_run_command(args: impl IntoIterator<Item = String>, cwd: Option<&Path>) -> String {
+    args.into_iter()
+        .map(|arg| {
+            let path = Path::new(&arg);
+            if !path.is_absolute() {
+                return arg;
+            }
+            let shown = cwd
+                .and_then(|cwd| path.strip_prefix(cwd).ok())
+                .filter(|relative| !relative.as_os_str().is_empty())
+                .or_else(|| path.file_name().map(Path::new));
+            shown.map_or(arg.clone(), |shown| shown.display().to_string())
+        })
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
 #[cfg(test)]
 mod tests {
-    use super::git_revision_at;
+    use super::{git_revision_at, recorded_run_command};
+    use std::path::Path;
     use std::{fs, process::Command, time::SystemTime};
 
     #[test]
@@ -415,5 +440,23 @@ mod tests {
         fs::write(dir.join("src/new.rs"), "changed source").unwrap();
         assert_ne!(git_revision_at(&dir).unwrap(), untracked);
         fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn recorded_run_command_drops_operator_directories() {
+        let args = [
+            "/home/someone/checkout/target/release/pcs-bench",
+            "lattice-eval",
+            "run",
+            "--out",
+            "/home/someone/scratch.abc/results-final",
+            "--payload",
+            "27,29",
+        ]
+        .map(str::to_owned);
+        assert_eq!(
+            recorded_run_command(args, Some(Path::new("/home/someone/checkout"))),
+            "target/release/pcs-bench lattice-eval run --out results-final --payload 27,29"
+        );
     }
 }
