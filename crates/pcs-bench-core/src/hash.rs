@@ -46,10 +46,10 @@ pub const FLOCK_BITS: FieldSpec = FieldSpec {
 pub const KOALA_BEAR_TWO_ADICITY: u32 = 24;
 
 /// Pinned [Plonky3](https://github.com/Plonky3/Plonky3) revision (`p3-whir`).
-pub const PLONKY3_REVISION: &str = "9d496524560f3c699473906c6f50fca7cf343730";
+pub const PLONKY3_REVISION: &str = "3acc8b70e68d6c2afc03930700c26540bd47458d";
 
 /// Pinned Plonky3 revision for univariate FRI and STIR.
-pub const PLONKY3_FRI_STIR_REVISION: &str = "3da160d09d1c6a878adaa5b339939fcdccda5d36";
+pub const PLONKY3_FRI_STIR_REVISION: &str = "3acc8b70e68d6c2afc03930700c26540bd47458d";
 
 /// Pinned [SP1 / SLOP](https://github.com/succinctlabs/sp1) revision (`slop-basefold`).
 pub const SP1_REVISION: &str = "0f2a1e1389747ac0dbee1c4d40243eed20baba86";
@@ -126,6 +126,10 @@ const PLONKY3_FRI_NATIVE_PARAM: &str = "plonky3-fri-new-benchmark-r1-f2-q100-qp1
 
 /// Canonical result identity for the fold-4 Plonky3 STIR benchmark profile.
 const PLONKY3_STIR_NATIVE_PARAM: &str = "plonky3-stir-cap100-r1-f4-maxpow20";
+
+/// Canonical result identity for the Plonky3 WHIR profile over the octic
+/// KoalaBear challenge field.
+const PLONKY3_WHIR_NATIVE_PARAM: &str = "whir-128-ext8";
 
 /// Plonky2 FRI log-inverse rate (`rho = 1/8`).
 pub const PLONKY2_FRI_RATE_BITS: usize = 3;
@@ -633,7 +637,7 @@ fn hash_case_inner(payload_log2: u32, scheme: HashSchemeId, threads: u32) -> Has
             field: KOALA_BEAR,
             log2_n: log2_n_32,
             threads,
-            native_param: "whir-128",
+            native_param: PLONKY3_WHIR_NATIVE_PARAM,
         },
         HashSchemeId::Binius64 => HashCase {
             payload_log2,
@@ -939,7 +943,7 @@ mod tests {
         }
         assert_eq!(
             HashSchemeId::Whir.commit_url(),
-            "https://github.com/Plonky3/Plonky3/commit/9d496524560f3c699473906c6f50fca7cf343730"
+            "https://github.com/Plonky3/Plonky3/commit/3acc8b70e68d6c2afc03930700c26540bd47458d"
         );
         assert_eq!(
             HashSchemeId::Basefold.commit_url(),

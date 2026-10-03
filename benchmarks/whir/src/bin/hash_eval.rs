@@ -3,14 +3,13 @@
 use p3_challenger::DuplexChallenger;
 use p3_commit::MultilinearPcs;
 use p3_dft::Radix2DFTSmallBatch;
-use p3_field::extension::QuinticTrinomialExtensionField;
+use p3_field::extension::BinomialExtensionField;
 use p3_field::Field;
 use p3_koala_bear::{KoalaBear, Poseidon2KoalaBear};
 use p3_merkle_tree::MerkleTreeMmcs;
 use p3_sumcheck::layout::{Layout as _, SuffixProver, Table};
 use p3_sumcheck::{OpeningBatch, OpeningProtocol, PointSchedule, TableShape, TableSpec};
 use p3_symmetric::{PaddingFreeSponge, TruncatedPermutation};
-use p3_whir::fiat_shamir::domain_separator::DomainSeparator;
 use p3_whir::parameters::{
     FoldingFactor, ProtocolParameters, SecurityAssumption, WhirConfig, WhirConfigError,
 };
@@ -28,7 +27,9 @@ use std::process::ExitCode;
 use std::time::Instant;
 
 type F = KoalaBear;
-type EF = QuinticTrinomialExtensionField<F>;
+// Upstream's `whir_pcs` benchmark uses the octic extension: the initial claim
+// batching bound must reach 128 bits before any grinding is credited.
+type EF = BinomialExtensionField<F, 8>;
 type Poseidon16 = Poseidon2KoalaBear<16>;
 type Poseidon24 = Poseidon2KoalaBear<24>;
 type MerkleHash = PaddingFreeSponge<Poseidon24, 24, 16, 8>;
@@ -137,11 +138,9 @@ fn timed_whir(log2_n: u32) -> Result<WorkerOutput, String> {
 
     let t0 = Instant::now();
     let mut prover_challenger = challenger.clone();
-    let mut domainsep = DomainSeparator::new(vec![]);
-    pcs.add_domain_separator::<8>(&mut domainsep);
-    domainsep.observe_domain_separator(&mut prover_challenger);
     let (commitment, prover_data) =
-        <MyPcs as MultilinearPcs<EF, MyChallenger>>::commit(&pcs, witness, &mut prover_challenger);
+        <MyPcs as MultilinearPcs<EF, MyChallenger>>::commit(&pcs, witness, &mut prover_challenger)
+            .map_err(|error| format!("WHIR commit failed: {error}"))?;
     let commit_ns = elapsed_ns(t0);
 
     let t0 = Instant::now();
@@ -150,7 +149,8 @@ fn timed_whir(log2_n: u32) -> Result<WorkerOutput, String> {
         prover_data,
         protocol.clone(),
         &mut prover_challenger,
-    );
+    )
+    .map_err(|error| format!("WHIR open failed: {error}"))?;
     let open_ns = elapsed_ns(t0);
 
     let proof_encoding = postcard::to_allocvec(&proof).map_err(|error| error.to_string())?;
@@ -159,9 +159,6 @@ fn timed_whir(log2_n: u32) -> Result<WorkerOutput, String> {
 
     let t0 = Instant::now();
     let mut verifier_challenger = challenger.clone();
-    let mut domainsep = DomainSeparator::new(vec![]);
-    pcs.add_domain_separator::<8>(&mut domainsep);
-    domainsep.observe_domain_separator(&mut verifier_challenger);
     <MyPcs as MultilinearPcs<EF, MyChallenger>>::verify(
         &pcs,
         &commitment,
@@ -179,9 +176,6 @@ fn timed_whir(log2_n: u32) -> Result<WorkerOutput, String> {
         }
         if let Ok(altered_proof) = postcard::from_bytes(&altered_encoding) {
             let mut negative_challenger = challenger;
-            let mut domainsep = DomainSeparator::new(vec![]);
-            pcs.add_domain_separator::<8>(&mut domainsep);
-            domainsep.observe_domain_separator(&mut negative_challenger);
             if <MyPcs as MultilinearPcs<EF, MyChallenger>>::verify(
                 &pcs,
                 &commitment,
@@ -205,7 +199,7 @@ fn timed_whir(log2_n: u32) -> Result<WorkerOutput, String> {
     Ok(WorkerOutput {
         status: RunStatus::Ok,
         status_detail: Some(format!(
-            "statement=multilinear,distribution=full-field-uniform,point=transcript-extension,evaluation=proof-embedded,soundness={:?},rate=1/{},pow_bits={},selection_objective=first-valid-capacity-johnson-unique",
+            "statement=multilinear,distribution=full-field-uniform,point=transcript-extension,evaluation=proof-embedded,challenge_field=koalabear-ext8,soundness={:?},rate=1/{},pow_bits={},selection_objective=first-valid-capacity-johnson-unique",
             derived.soundness,
             1usize << derived.starting_log_inv_rate,
             derived.pow_bits
@@ -226,6 +220,9 @@ fn postcard_len<T: serde::Serialize>(value: &T) -> Option<u64> {
         .ok()
         .map(|bytes| bytes.len() as u64)
 }
+
+/// Opening claims per proof: one table, one transcript-derived point.
+const WHIR_OPENING_CLAIMS: usize = 1;
 
 struct DerivedWhir {
     config: WhirConfig<EF, F, MyChallenger>,
@@ -263,7 +260,11 @@ fn derive_whir_config(log2_n: u32) -> Result<DerivedWhir, String> {
                     starting_log_inv_rate,
                     round_log_inv_rates: round_log_inv_rates.clone(),
                 };
-                match WhirConfig::<EF, F, MyChallenger>::new(num_variables, params) {
+                match WhirConfig::<EF, F, MyChallenger>::new_with_initial_claims(
+                    num_variables,
+                    params,
+                    WHIR_OPENING_CLAIMS,
+                ) {
                     Ok(config) => {
                         return Ok(DerivedWhir {
                             config,
@@ -277,6 +278,14 @@ fn derive_whir_config(log2_n: u32) -> Result<DerivedWhir, String> {
                             "{soundness:?} rate=1/{} budget {budget}: derived {required}-bit PoW",
                             1usize << starting_log_inv_rate
                         ));
+                    }
+                    Err(error @ WhirConfigError::InitialClaimsBelowTarget { .. }) => {
+                        // Grinding cannot recover this bound; move to the next regime.
+                        last_pow_error = Some(format!(
+                            "{soundness:?} rate=1/{}: {error}",
+                            1usize << starting_log_inv_rate
+                        ));
+                        break;
                     }
                     Err(error) => return Err(error.to_string()),
                 }

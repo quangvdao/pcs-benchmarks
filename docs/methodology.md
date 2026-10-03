@@ -122,11 +122,13 @@ rules that apply only to that table:
    target, and identify benchmark retunes. Akita uses its validated 128-bit
    Module-SIS and classical-ROM schedule targets. Plonky3 WHIR uses a 128-bit
    round-by-round target.
-   WHIR uses Plonky3 `p3-whir` with `security_level=128`. Capacity bound at
-   rate 1/2 is used when the derived grind fits 30 bits (KoalaBear); unique
-   decoding at rate 1/2 is used when list-decoding bounds cannot close 128
-   bits (`log2 N` 28 and 30 in this matrix). Generated tables footnote those
-   WHIR rows. Plonky2 uses its approximately 100-bit standard-recursion FRI
+   WHIR uses Plonky3 `p3-whir` with `security_level=128` over the octic
+   KoalaBear challenge field of the upstream PCS benchmark. Capacity bound at
+   rate 1/2 is used when the derived grind fits 30 bits (KoalaBear); at the
+   current pin that holds for every size in this matrix with a 20-bit budget.
+   The worker still falls back to the Johnson bound and then unique decoding
+   if capacity cannot close 128 bits, and generated tables footnote
+   unique-decoding WHIR rows. Plonky2 uses its approximately 100-bit standard-recursion FRI
    tuple. Plonky3 FRI uses the pinned upstream benchmark tuple, approximately
    113.744 bits under the pinned random-words estimate; STIR uses the upstream
    fold-4 PCS benchmark schedule and validates an aggregate 100-bit

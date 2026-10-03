@@ -70,7 +70,10 @@ profile whenever one exists. The five repaired profiles were remeasured on
   bits per phase and Poseidon2.
   The implementation validates an aggregate 100-bit target, conditional on
   capacity list decoding and mutual correlated agreement at capacity.
-- **WHIR (Plonky3):** `p3-whir`, 128-bit round-by-round target, rate \(1/2\), folding
+- **WHIR (Plonky3):** `p3-whir`, 128-bit round-by-round target, the octic
+  KoalaBear challenge field used by the upstream PCS benchmark (the pinned
+  PCS rejects the quintic field at capacity because the initial claim
+  batching retains under 128 bits), rate \(1/2\), folding
   factor 4 after a first-round fold large enough that the FFT stays inside
   KoalaBear two-adicity 24. Later-round log-inverse rates are lowered just
   enough that `two_adic_generator` also stays inside that two-adicity.
@@ -78,7 +81,9 @@ profile whenever one exists. The five repaired profiles were remeasured on
   grind 31+ bits) and prefers capacity bound at rate \(1/2\). If that cannot
   meet 128 bits within the grind limit, it tries the Johnson bound, then
   unique decoding, and then rate \(1/4\). This is a first-valid
-  decoding-priority objective, not a measured minimum-latency search.
+  decoding-priority objective, not a measured minimum-latency search. At the
+  current pin every size on this matrix (\(\log_2 N\) 22–30) derives
+  capacity bound at rate \(1/2\) with a 20-bit budget.
 - **Binius64 BaseFold:** \(\mathbb F_{2^{128}}\), rate \(1/2\), SHA-256,
   and the product-default 96-bit unique-decoding query target. The
   worker uses `OptimalPackedB128` and the upstream multithreaded,
@@ -128,8 +133,8 @@ Do not mix machines, ISAs, or silently remap sizes.
 | --- | --- | --- |
 | Akita (PR #177 pin) | https://github.com/LayerZero-Labs/akita | [`5d765c9a`](https://github.com/LayerZero-Labs/akita/commit/5d765c9a862aaef8296bf3ac0f4f3dee25fb5051) |
 | Plonky2 FRI | https://github.com/elliottech/plonky2 | [`e1c2d354`](https://github.com/elliottech/plonky2/commit/e1c2d35450948b88fca6a7e69e2643c3ecad3caa) |
-| Plonky3 FRI / STIR | https://github.com/Plonky3/Plonky3 | [`3da160d0`](https://github.com/Plonky3/Plonky3/commit/3da160d09d1c6a878adaa5b339939fcdccda5d36) |
-| WHIR (`p3-whir`) | https://github.com/Plonky3/Plonky3 | [`9d496524`](https://github.com/Plonky3/Plonky3/commit/9d496524560f3c699473906c6f50fca7cf343730) |
+| Plonky3 FRI / STIR | https://github.com/Plonky3/Plonky3 | [`3acc8b70`](https://github.com/Plonky3/Plonky3/commit/3acc8b70e68d6c2afc03930700c26540bd47458d) |
+| WHIR (`p3-whir`) | https://github.com/Plonky3/Plonky3 | [`3acc8b70`](https://github.com/Plonky3/Plonky3/commit/3acc8b70e68d6c2afc03930700c26540bd47458d) |
 | Binius64 BaseFold | https://github.com/binius-zk/binius64 | [`6e75a2d1`](https://github.com/binius-zk/binius64/commit/6e75a2d1d2e716578ae3ccb62806413fb1615176) |
 | Flock Ligerito | https://github.com/succinctlabs/flock | [`43f0eee0`](https://github.com/succinctlabs/flock/commit/43f0eee06d887d87ad25d72614cbc2b17fe91430) |
 | WHIR (WorldFnd) | https://github.com/worldfnd/whir | [`8804e80e`](https://github.com/worldfnd/whir/commit/8804e80e8e890d01bb585f2bd5e5b564ac0fd80d) |
@@ -169,6 +174,7 @@ cargo run -p pcs-bench-runner --bin pcs-bench -- hash-eval compare \
 
 Each run writes `records.jsonl`, `table.md`, `table.tex`, `table-resources.md`,
 `table-resources.tex`, `report.md`, `report.tex`, and `provenance.txt`.
-WHIR unique-decoding rows (`log₂ N` 28 and 30 on this matrix) and packed
+WHIR unique-decoding rows (none at the current Plonky3 pin; `log₂ N` 28 and
+30 in records taken at the earlier pin) and packed
 Plonky3 univariate rows (`log₂ N>23`) are marked with table footnotes.
 Unmeasured roster rows stay `pending` until a worker records them.

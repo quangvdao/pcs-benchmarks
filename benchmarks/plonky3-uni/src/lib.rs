@@ -186,7 +186,9 @@ where
 {
     let mut prover_challenger = base_challenger.clone();
     let t0 = Instant::now();
-    let (commit, prover_data) = pcs.commit(vec![(domain, message)]);
+    let (commit, prover_data) = pcs
+        .commit(vec![(domain, message)])
+        .map_err(|error| format!("{label} commit failed: {error:?}"))?;
     let commit_ns = elapsed_ns(t0);
 
     let t0 = Instant::now();
@@ -194,7 +196,12 @@ where
     let zeta: EF = FieldChallenger::<F>::sample_algebra_element(&mut prover_challenger);
 
     let opening_points = vec![vec![zeta]];
-    let (openings, proof) = pcs.open(vec![(&prover_data, opening_points)], &mut prover_challenger);
+    let (openings, proof) = pcs
+        .open(
+            vec![(&prover_data, opening_points).into()],
+            &mut prover_challenger,
+        )
+        .map_err(|error| format!("{label} open failed: {error:?}"))?;
     let open_ns = elapsed_ns(t0);
     let values = openings[0][0][0].clone();
 
@@ -210,7 +217,8 @@ where
         vec![(
             commit.clone(),
             vec![(domain.clone(), vec![(zeta, values.clone())])],
-        )],
+        )
+            .into()],
         &proof,
         &mut verifier_challenger,
     )
@@ -235,7 +243,8 @@ where
                 vec![(
                     commit.clone(),
                     vec![(domain, vec![(altered_zeta, altered_values)])],
-                )],
+                )
+                    .into()],
                 &proof,
                 &mut negative_challenger,
             )
@@ -360,6 +369,7 @@ mod tests {
         assert_eq!(params.log_final_poly_len, 0);
         assert_eq!(params.max_log_arity, 1);
         assert_eq!(params.num_queries, PLONKY3_FRI_QUERIES);
+        assert_eq!(params.batch_proof_of_work_bits, 0);
         assert_eq!(params.commit_proof_of_work_bits, 0);
         assert_eq!(params.query_proof_of_work_bits, PLONKY3_FRI_POW_BITS);
         assert!(FRI_PRESET.contains("random_words_bits=113.744"));
