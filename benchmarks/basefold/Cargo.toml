@@ -30,3 +30,9 @@ slop-koala-bear = { git = "https://github.com/succinctlabs/sp1", rev = "edc07b68
 slop-merkle-tree = { git = "https://github.com/succinctlabs/sp1", rev = "edc07b68c92c17e4fc8658c39a2ef8d9ea5d95dc" }
 slop-multilinear = { git = "https://github.com/succinctlabs/sp1", rev = "edc07b68c92c17e4fc8658c39a2ef8d9ea5d95dc" }
 slop-stacked = { git = "https://github.com/succinctlabs/sp1", rev = "edc07b68c92c17e4fc8658c39a2ef8d9ea5d95dc" }
+
+# Same link-time optimisation for every Rust adapter, so no scheme is built
+# with a weaker profile than another.
+[profile.release]
+lto = "thin"
+codegen-units = 1

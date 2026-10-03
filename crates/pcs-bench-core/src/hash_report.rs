@@ -311,7 +311,8 @@ a {MEMORY_LIMIT_GIB}~GiB virtual-address-space ceiling (`ulimit -v`, numerically
 warmup and measured processes separately; warmup rows are stored with
 `warmup: true` and excluded from the aggregate. Workload seeds and the
 `vary`/`fixed` seed mode are recorded per observation. Recorded worker flags
-for this dataset: `{RUSTFLAGS}`. Isolated Cargo trees under `benchmarks/`
+for this dataset: `{RUSTFLAGS}`. Every adapter is built with thin LTO and one
+codegen unit. Isolated Cargo trees under `benchmarks/`
 fetch the pinned git revisions (Plonky3, SP1, plonky2, Binius64, Flock,
 WorldFnd/WHIR) so they do not unify with the lattice workspace. Cargo fetches
 those revisions on first build.

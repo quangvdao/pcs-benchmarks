@@ -22,3 +22,9 @@ pcs-bench-core = { path = "../../crates/pcs-bench-core" }
 rand = "0.8"
 rayon = "1.10"
 serde_json = "1.0"
+
+# Same link-time optimisation for every Rust adapter, so no scheme is built
+# with a weaker profile than another.
+[profile.release]
+lto = "thin"
+codegen-units = 1

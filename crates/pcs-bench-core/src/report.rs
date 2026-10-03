@@ -346,6 +346,8 @@ and the `vary`/`fixed` seed mode are recorded per observation. Greyhound is
 and run with `LATTICE_DOGS_THREADS=1` and `LABRADOR_SIS_SECURITY=l2-quantum128-adps16`.
 Proof sizes are contextual wire bytes. Recorded worker flags for this dataset:
 `{RUSTFLAGS}`.
+The Akita adapter is built with thin LTO and one codegen unit; RoKoKo keeps
+its own release profile (fat LTO, one codegen unit).
 `./scripts/fetch-vendors.sh` clones the pinned implementations and patches
 RoKoKo so the executor prints commitment, CRS, and peak RSS. Akita embeds
 the pinned upstream schedule artifacts and committed supplemental direct rows;
