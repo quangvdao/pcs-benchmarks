@@ -14,12 +14,14 @@ description = "Akita adapter for the PCS benchmark suite"
 # Unmodified pinned upstream checkout, including its schedule artifacts.
 akita-algebra = { path = "../../third_party/akita/crates/akita-algebra" }
 akita-config = { path = "../../third_party/akita/crates/akita-config" }
+akita-cpu-backend = { path = "../../third_party/akita/crates/akita-cpu-backend" }
+akita-params = { path = "../../third_party/akita/crates/akita-params" }
 akita-pcs = { path = "../../third_party/akita/crates/akita-pcs" }
 akita-prover = { path = "../../third_party/akita/crates/akita-prover" }
 akita-serialization = { path = "../../third_party/akita/crates/akita-serialization" }
 akita-transcript = { path = "../../third_party/akita/crates/akita-transcript" }
 akita-types = { path = "../../third_party/akita/crates/akita-types" }
-jolt-field = { version = "=0.1.0", git = "https://github.com/a16z/jolt", rev = "72dc6451628d8b1dd794147a1f1cc40be0d77963", default-features = false, features = ["asm", "solinas"] }
+jolt-field = { version = "=0.1.0", git = "https://github.com/a16z/jolt", rev = "1618f4b6dc97effcec3568ca7cf2b7420ac9e75f", default-features = false, features = ["asm", "solinas"] }
 pcs-bench-core = { path = "../../crates/pcs-bench-core" }
 rand = "0.8"
 rayon = "1.10"

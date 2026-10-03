@@ -3,15 +3,13 @@
 use akita_algebra::poly::multilinear_eval;
 use akita_config::proof_optimized::fp128;
 use akita_config::CommitmentConfig;
+use akita_cpu_backend::{CommitmentHandle, CpuBackend, DensePoly, GroupContext};
+use akita_params::{BasisMode, OpeningScheduleSelection};
 use akita_pcs::AkitaCommitmentScheme;
-use akita_prover::{ComputeBackendSetup, CpuBackend, DensePoly, SelectedProverOpeningData};
-use akita_transcript::AkitaTranscript;
-use akita_types::{
-    AkitaCommitmentHint, BasisMode, CommittedGroup, CommittedGroupBatchProfile,
-    GroupBatchStatement, OpeningClaims, OpeningScheduleSelection, PolynomialGroupClaims,
-};
+use akita_prover::SelectedProverOpeningData;
+use akita_types::{CommittedGroup, GroupBatchStatement, OpeningClaims, PolynomialGroupClaims};
 use criterion::{black_box, criterion_group, criterion_main, BatchSize, Criterion, Throughput};
-use jolt_field::{CanonicalEncoding, Ring, Zero};
+use jolt_field::{CanonicalEncoding, Ring};
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
 use std::time::Duration;
@@ -20,6 +18,7 @@ type F = fp128::Field;
 
 const INPUT_SEED: u64 = 0xDEAD_BEEF;
 const POINT_SEED: u64 = 0xCAFE_BABE;
+const TRANSCRIPT_DOMAIN: &[u8] = b"pcs-benchmark/v1";
 
 fn dense_evaluations<Cfg: CommitmentConfig<Field = F>>(num_vars: usize) -> Vec<F> {
     let mut rng = StdRng::seed_from_u64(INPUT_SEED);
@@ -43,31 +42,21 @@ fn opening_point(num_vars: usize) -> Vec<F> {
         .collect()
 }
 
-fn prover_claims<'a, Cfg, P>(
-    point: &'a [F],
-    polynomials: &'a [&'a P],
-    commitment: &'a CommittedGroup<Cfg::Field>,
-    hint: AkitaCommitmentHint<Cfg::Field>,
+fn prover_claims<'a, Cfg>(
+    point: &[F],
+    opening: F,
+    commitment: &CommittedGroup<F>,
+    handle: CommitmentHandle<F, F>,
     schedules: &akita_config::TrustedScheduleCatalog<Cfg>,
-) -> SelectedProverOpeningData<'a, F, akita_prover::PreparedProverGroup<'a, P>, Cfg::Field>
+) -> SelectedProverOpeningData<'a, F, CommitmentHandle<F, F>, F>
 where
-    Cfg: CommitmentConfig<ExtField = F>,
-    P: akita_prover::RootPolyMeta<Cfg::Field>,
+    Cfg: CommitmentConfig<Field = F, ExtField = F>,
 {
-    let group = PolynomialGroupClaims::new(
-        point.to_vec(),
-        vec![F::zero(); polynomials.len()],
-        commitment.clone(),
-    )
-    .expect("benchmark claims are valid");
+    let group = PolynomialGroupClaims::new(point.to_vec(), vec![opening], commitment.clone())
+        .expect("benchmark claims are valid");
     let claims = OpeningClaims::from_groups(vec![group]).expect("benchmark claim group is valid");
-    SelectedProverOpeningData::from_committed_claims::<Cfg>(
-        claims,
-        vec![hint],
-        vec![polynomials],
-        schedules,
-    )
-    .expect("benchmark prover data is valid")
+    SelectedProverOpeningData::from_committed_claims::<Cfg>(claims, vec![handle], schedules)
+        .expect("benchmark prover data is valid")
 }
 
 fn verifier_claims<'a>(
@@ -113,70 +102,58 @@ where
     });
 
     let setup = scheme.setup_prover(num_vars, 1).expect("setup succeeds");
-    let prepared = CpuBackend::DEFAULT
-        .prepare_setup(&setup)
-        .expect("setup preparation succeeds");
-    let stack = akita_prover::UniformProverStack::uniform(
-        &CpuBackend::DEFAULT,
-        &prepared,
-        setup.expanded.as_ref(),
-    )
-    .expect("prover stack construction succeeds");
+    let backend =
+        CpuBackend::<F, F>::new(setup.expanded.clone()).expect("backend construction succeeds");
+    let source = backend
+        .import_source(vec![polynomial])
+        .expect("source import succeeds");
 
     group.bench_function("commit", |bencher| {
         bencher.iter(|| {
             black_box(
-                scheme
-                    .commit::<_, _>(
-                        &setup,
-                        black_box(std::slice::from_ref(&polynomial)),
-                        stack.commitment(),
-                        akita_prover::GroupContext::scheduler_without_precommitted_groups(),
+                backend
+                    .commit(
+                        scheme.schedules(),
+                        black_box(&source),
+                        GroupContext::scheduler_without_precommitted_groups(),
                     )
                     .expect("commit succeeds"),
             )
         });
     });
 
-    let output = scheme
-        .commit::<_, _>(
-            &setup,
-            std::slice::from_ref(&polynomial),
-            stack.commitment(),
-            akita_prover::GroupContext::scheduler_without_precommitted_groups(),
+    let output = backend
+        .commit(
+            scheme.schedules(),
+            &source,
+            GroupContext::scheduler_without_precommitted_groups(),
         )
         .expect("commit succeeds");
-    let polynomial_refs = [&polynomial];
-    let selection = scheme
-        .schedules()
-        .resolve_profiles(&CommittedGroupBatchProfile {
-            final_group: *output.committed_group.profile(),
-            precommitteds: Vec::new(),
-        })
-        .expect("generated schedule contains benchmark case")
-        .selection();
-    let verifier_setup = scheme
-        .setup_verifier(&setup)
-        .expect("verifier setup succeeds");
+    let verifier = scheme
+        .verifier(
+            scheme
+                .setup_verifier(&setup)
+                .expect("verifier setup succeeds"),
+        )
+        .expect("verifier construction succeeds");
 
     group.bench_function("prove", |bencher| {
         bencher.iter_batched(
-            || output.prover_state.clone(),
-            |hint| {
-                let mut transcript = AkitaTranscript::<F>::new(b"pcs-benchmark/v1");
+            || output.private_handle.clone(),
+            |handle| {
                 black_box(
                     scheme
-                        .batched_prove::<_, _, _, _>(
+                        .batched_prove(
                             &setup,
-                            prover_claims::<Cfg, _>(
+                            prover_claims::<Cfg>(
                                 &point,
-                                &polynomial_refs,
+                                opening,
                                 &output.committed_group,
-                                hint,
+                                handle,
                                 scheme.schedules(),
                             ),
-                            &stack,
-                            &mut transcript,
+                            &backend,
+                            TRANSCRIPT_DOMAIN,
                             BasisMode::Lagrange,
                         )
                         .expect("proving succeeds"),
@@ -186,31 +163,30 @@ where
         );
     });
 
-    let mut prover_transcript = AkitaTranscript::<F>::new(b"pcs-benchmark/v1");
+    let prover_data = prover_claims::<Cfg>(
+        &point,
+        opening,
+        &output.committed_group,
+        output.private_handle.clone(),
+        scheme.schedules(),
+    );
+    let selection = prover_data.selection();
     let proof = scheme
-        .batched_prove::<_, _, _, _>(
+        .batched_prove(
             &setup,
-            prover_claims::<Cfg, _>(
-                &point,
-                &polynomial_refs,
-                &output.committed_group,
-                output.prover_state.clone(),
-                scheme.schedules(),
-            ),
-            &stack,
-            &mut prover_transcript,
+            prover_data,
+            &backend,
+            TRANSCRIPT_DOMAIN,
             BasisMode::Lagrange,
         )
         .expect("proving succeeds");
 
     group.bench_function("verify", |bencher| {
         bencher.iter(|| {
-            let mut transcript = AkitaTranscript::<F>::new(b"pcs-benchmark/v1");
-            scheme
+            verifier
                 .batched_verify(
                     black_box(&proof),
-                    black_box(&verifier_setup),
-                    &mut transcript,
+                    TRANSCRIPT_DOMAIN,
                     black_box(verifier_claims(
                         selection,
                         &point,
