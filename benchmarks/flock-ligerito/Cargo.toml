@@ -17,7 +17,7 @@ path = "src/bin/hash_eval.rs"
 
 [dependencies]
 bincode = "1.3"
-flock-core = { git = "https://github.com/succinctlabs/flock", rev = "43f0eee06d887d87ad25d72614cbc2b17fe91430" }
+flock-core = { git = "https://github.com/succinctlabs/flock", rev = "b684b1258e4b1f202bec24afd660ace851b09e5e" }
 pcs-bench-core = { path = "../../crates/pcs-bench-core" }
 rand = "0.8"
 rayon = "1.10"

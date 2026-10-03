@@ -173,7 +173,7 @@ fn markdown_security_table() -> &'static str {
 | Plonky3 STIR | Upstream PCS benchmark: rate 1/2, fold 4 throughout, at most 20 work bits per phase, 16-bit batching grind | 100-bit aggregate capacity/MCA target |\n\
 | Plonky3 WHIR | Upstream PCS benchmark profile: octic extension, rate 1/2, fold 4, capacity bound, 20 work bits | 128-bit round-by-round target under the pinned model |\n\
 | Binius64 BaseFold | Product default: rate 1/2, 232 queries, SHA-256 | 96-bit unique-decoding query target |\n\
-| Flock Ligerito | Default Fast: rate 1/2, Johnson, two OOD checks, SHA-256 | 128-bit round-by-round target |\n\
+| Flock Ligerito | Default Fast: rate 1/2, Johnson, two OOD checks, BLAKE3 | 128-bit round-by-round target |\n\
 | WorldFnd WHIR | CLI defaults: rate 1/2, fold 4, Johnson, BLAKE3 | 128-bit round-by-round target |\n\
 | SP1 BaseFold | Product default: rate 1/4, 124 queries, 16 work bits, stacking height 21 | 100-bit unique-decoding query target |"
 }
@@ -192,7 +192,7 @@ Plonky3 FRI & Rate $1/2$, 100 queries, 16 query-PoW bits & 113.744-bit conjectur
 Plonky3 STIR & Rate $1/2$, fold 4 throughout, at most 20 work bits per phase, 16-bit batching grind & 100-bit aggregate capacity/MCA \\\\\n\
 Plonky3 WHIR & Octic extension, rate $1/2$, fold 4, capacity bound, 20 work bits & 128-bit RBR under pinned model \\\\\n\
 Binius64 & Rate $1/2$, 232 queries, SHA-256 & 96-bit UDR query target \\\\\n\
-Flock & Default \\texttt{Fast}, SHA-256 & 128-bit RBR \\\\\n\
+Flock & Default \\texttt{Fast}, BLAKE3 & 128-bit RBR \\\\\n\
 WorldFnd & Rate $1/2$, fold 4, Johnson, BLAKE3 & 128-bit RBR \\\\\n\
 SP1 & Rate $1/4$, 124 queries, 16 work bits, height 21 & 100-bit UDR query target \\\\\n\
 \\bottomrule\n\

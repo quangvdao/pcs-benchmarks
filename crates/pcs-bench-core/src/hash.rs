@@ -61,7 +61,7 @@ pub const PLONKY2_REVISION: &str = "e1c2d35450948b88fca6a7e69e2643c3ecad3caa";
 pub const BINIUS64_REVISION: &str = "6a179536d90fcc76eeca0cee4e059f5e17efb459";
 
 /// Pinned [Flock](https://github.com/succinctlabs/flock) revision.
-pub const FLOCK_REVISION: &str = "43f0eee06d887d87ad25d72614cbc2b17fe91430";
+pub const FLOCK_REVISION: &str = "b684b1258e4b1f202bec24afd660ace851b09e5e";
 
 /// Pinned [WorldFnd WHIR](https://github.com/worldfnd/whir) revision.
 pub const WORLDFND_WHIR_REVISION: &str = "8804e80e8e890d01bb585f2bd5e5b564ac0fd80d";

@@ -23,6 +23,8 @@ use std::io::{self, Write};
 use std::process::ExitCode;
 use std::time::Instant;
 
+const TRANSCRIPT_DOMAIN: &[u8] = b"akita-bench-flock";
+
 fn main() -> ExitCode {
     let threads = parse_u32_flag("--threads").unwrap_or(1).max(1);
     init_thread_pool(threads);
@@ -60,13 +62,17 @@ fn timed_ligerito(m: u32) -> Result<WorkerOutput, String> {
     let profile = LigeritoProfile::Fast;
     let log_batch_size = embedded_initial_k_or_default(m, profile);
     let log_n = m - FLOCK_LOG_PACKING as usize;
+    // Upstream's default hash (BLAKE3 at this pin) backs both the Merkle
+    // commitment and the Fiat-Shamir transcript, matching the hash named in
+    // the embedded profile files.
+    let hash = HashKind::default();
     let params = PcsParams {
         m,
         log_inv_rate: profile.log_inv_rate(),
         log_batch_size,
         profile,
         num_lanes: None,
-        merkle_hash: HashKind::Sha256,
+        merkle_hash: hash,
     };
     let lig_p = prover_config_for(log_n, log_batch_size, profile).map_err(|e| e)?;
     let lig_v = verifier_config_for(log_n, log_batch_size, profile).map_err(|e| e)?;
@@ -116,7 +122,7 @@ fn timed_ligerito(m: u32) -> Result<WorkerOutput, String> {
         eq_ind: DirectEqInd::EqPoint(point.clone()),
     };
     let grinding = params.opening_grinding();
-    let mut prover_ch = FsChallenger::new(b"akita-bench-flock");
+    let mut prover_ch = FsChallenger::with_hash(TRANSCRIPT_DOMAIN, hash);
     let proof = open_batch_mixed_ligerito_with_precomputed_s_hat_v_and_grinding(
         packed,
         &prover_data,
@@ -136,7 +142,7 @@ fn timed_ligerito(m: u32) -> Result<WorkerOutput, String> {
         value,
     };
     let t0 = Instant::now();
-    let mut verifier_ch = FsChallenger::new(b"akita-bench-flock");
+    let mut verifier_ch = FsChallenger::with_hash(TRANSCRIPT_DOMAIN, hash);
     verify_opening_batch_ligerito_mixed_with_grinding(
         &commitment,
         &[],
@@ -156,7 +162,7 @@ fn timed_ligerito(m: u32) -> Result<WorkerOutput, String> {
             point: &point,
             value: value + F128::ONE,
         };
-        let mut negative_ch = FsChallenger::new(b"akita-bench-flock");
+        let mut negative_ch = FsChallenger::with_hash(TRANSCRIPT_DOMAIN, hash);
         if verify_opening_batch_ligerito_mixed_with_grinding(
             &commitment,
             &[],
@@ -186,7 +192,8 @@ fn timed_ligerito(m: u32) -> Result<WorkerOutput, String> {
     Ok(WorkerOutput {
         status: RunStatus::Ok,
         status_detail: Some(format!(
-            "flock-ligerito-fast,statement=packed-field-mle,input_bits=2^{m},variables={log_n},field=F128,batch={log_batch_size},hash=sha256"
+            "flock-ligerito-fast,statement=packed-field-mle,input_bits=2^{m},variables={log_n},field=F128,batch={log_batch_size},hash={}",
+            hash.as_str()
         )),
         log2_n: Some(m as u32),
         timings_ns,

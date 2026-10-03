@@ -91,7 +91,8 @@ profile whenever one exists. The five repaired profiles were remeasured on
   pre-expanded NTT with the requested thread count. The
   commitment is the SHA-256 Merkle root (32 bytes) written at commit time;
   proof bytes are the rest of the Fiat–Shamir transcript.
-- **Flock Ligerito:** default Fast profile (`mXX_fast.toml`), SHA-256,
+- **Flock Ligerito:** default Fast profile (`mXX_fast.toml`), BLAKE3
+  for the Merkle tree and the transcript (the upstream default hash),
   Johnson plus two-point OOD, and a 128-bit round-by-round target. `m` is the
   input bit exponent; the measured statement is an
   \((m-7)\)-variable packed \(\mathbb F_{2^{128}}\) MLE. The worker generates
@@ -137,7 +138,7 @@ Do not mix machines, ISAs, or silently remap sizes.
 | Plonky3 FRI / STIR | https://github.com/Plonky3/Plonky3 | [`3acc8b70`](https://github.com/Plonky3/Plonky3/commit/3acc8b70e68d6c2afc03930700c26540bd47458d) |
 | WHIR (`p3-whir`) | https://github.com/Plonky3/Plonky3 | [`3acc8b70`](https://github.com/Plonky3/Plonky3/commit/3acc8b70e68d6c2afc03930700c26540bd47458d) |
 | Binius64 BaseFold | https://github.com/binius-zk/binius64 | [`6a179536`](https://github.com/binius-zk/binius64/commit/6a179536d90fcc76eeca0cee4e059f5e17efb459) |
-| Flock Ligerito | https://github.com/succinctlabs/flock | [`43f0eee0`](https://github.com/succinctlabs/flock/commit/43f0eee06d887d87ad25d72614cbc2b17fe91430) |
+| Flock Ligerito | https://github.com/succinctlabs/flock | [`b684b125`](https://github.com/succinctlabs/flock/commit/b684b1258e4b1f202bec24afd660ace851b09e5e) |
 | WHIR (WorldFnd) | https://github.com/worldfnd/whir | [`8804e80e`](https://github.com/worldfnd/whir/commit/8804e80e8e890d01bb585f2bd5e5b564ac0fd80d) |
 | BaseFold (SLOP) | https://github.com/succinctlabs/sp1 | [`0f2a1e13`](https://github.com/succinctlabs/sp1/commit/0f2a1e1389747ac0dbee1c4d40243eed20baba86) |
 

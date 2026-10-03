@@ -145,7 +145,7 @@ checksum = "3e0f1c7c3a72c66fd80abe965175f7523475c0489a87d3ff9d6e8c87d87a9d2d"
 [[package]]
 name = "flock-core"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/flock?rev=43f0eee06d887d87ad25d72614cbc2b17fe91430#43f0eee06d887d87ad25d72614cbc2b17fe91430"
+source = "git+https://github.com/succinctlabs/flock?rev=b684b1258e4b1f202bec24afd660ace851b09e5e#b684b1258e4b1f202bec24afd660ace851b09e5e"
 dependencies = [
  "bincode",
  "blake3",
@@ -165,7 +165,7 @@ dependencies = [
 [[package]]
 name = "flock-field"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/flock?rev=43f0eee06d887d87ad25d72614cbc2b17fe91430#43f0eee06d887d87ad25d72614cbc2b17fe91430"
+source = "git+https://github.com/succinctlabs/flock?rev=b684b1258e4b1f202bec24afd660ace851b09e5e#b684b1258e4b1f202bec24afd660ace851b09e5e"
 dependencies = [
  "serde",
 ]
@@ -173,7 +173,7 @@ dependencies = [
 [[package]]
 name = "flock-hash"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/flock?rev=43f0eee06d887d87ad25d72614cbc2b17fe91430#43f0eee06d887d87ad25d72614cbc2b17fe91430"
+source = "git+https://github.com/succinctlabs/flock?rev=b684b1258e4b1f202bec24afd660ace851b09e5e#b684b1258e4b1f202bec24afd660ace851b09e5e"
 dependencies = [
  "serde",
 ]
@@ -181,7 +181,7 @@ dependencies = [
 [[package]]
 name = "flock-merkle"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/flock?rev=43f0eee06d887d87ad25d72614cbc2b17fe91430#43f0eee06d887d87ad25d72614cbc2b17fe91430"
+source = "git+https://github.com/succinctlabs/flock?rev=b684b1258e4b1f202bec24afd660ace851b09e5e#b684b1258e4b1f202bec24afd660ace851b09e5e"
 dependencies = [
  "blake3",
  "flock-hash",
@@ -193,7 +193,7 @@ dependencies = [
 [[package]]
 name = "flock-multilinear"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/flock?rev=43f0eee06d887d87ad25d72614cbc2b17fe91430#43f0eee06d887d87ad25d72614cbc2b17fe91430"
+source = "git+https://github.com/succinctlabs/flock?rev=b684b1258e4b1f202bec24afd660ace851b09e5e#b684b1258e4b1f202bec24afd660ace851b09e5e"
 dependencies = [
  "rayon",
 ]
@@ -201,7 +201,7 @@ dependencies = [
 [[package]]
 name = "flock-parallel"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/flock?rev=43f0eee06d887d87ad25d72614cbc2b17fe91430#43f0eee06d887d87ad25d72614cbc2b17fe91430"
+source = "git+https://github.com/succinctlabs/flock?rev=b684b1258e4b1f202bec24afd660ace851b09e5e#b684b1258e4b1f202bec24afd660ace851b09e5e"
 dependencies = [
  "rayon",
 ]
@@ -209,7 +209,7 @@ dependencies = [
 [[package]]
 name = "flock-transcript"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/flock?rev=43f0eee06d887d87ad25d72614cbc2b17fe91430#43f0eee06d887d87ad25d72614cbc2b17fe91430"
+source = "git+https://github.com/succinctlabs/flock?rev=b684b1258e4b1f202bec24afd660ace851b09e5e#b684b1258e4b1f202bec24afd660ace851b09e5e"
 dependencies = [
  "blake3",
  "flock-field",
