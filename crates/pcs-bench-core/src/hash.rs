@@ -168,7 +168,7 @@ pub const FLOCK_LOG_PACKING: u32 = 7;
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum HashSchemeId {
-    /// Akita at the pinned `main` commit, same direct fp32-dense catalog as lattice-eval.
+    /// Akita at the pinned commit, same direct fp32-dense catalog as lattice-eval.
     Akita,
     /// Same pin and field as [`Self::Akita`], `fp32-dense-offload` catalog: the
     /// recursive planner schedule that offloads setup.

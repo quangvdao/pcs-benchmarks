@@ -73,8 +73,8 @@ pub const ROKOKO_Q50: FieldSpec = FieldSpec {
     log2_bits: 50,
 };
 
-/// Pinned Akita revision on `main` (immutable git SHA).
-pub const AKITA_REVISION: &str = "81f5f777fd0484d2f4e7300fe089b622da34c772";
+/// Pinned Akita revision (immutable git SHA; head of LayerZero-Labs/akita#177).
+pub const AKITA_REVISION: &str = "5d765c9a862aaef8296bf3ac0f4f3dee25fb5051";
 
 /// Pinned Greyhound reference revision (`LayerZero-Labs/greyhound-reference`).
 pub const GREYHOUND_REVISION: &str = "672e74100496f6ef698ba35e241cf7593e3d57af";
@@ -89,7 +89,7 @@ pub const ROKOKO_REVISION: &str = "26d07c73c54872b9e8d2b3200117a6a0a21b10ee";
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum SchemeId {
-    /// Akita at the pinned `main` commit, direct `fp32-dense` catalog.
+    /// Akita at the pinned commit, direct `fp32-dense` catalog.
     Akita,
     /// Same pin and field as [`Self::Akita`], with recursive setup offloading.
     AkitaOffload,
@@ -411,7 +411,7 @@ mod tests {
         );
         assert_eq!(
             SchemeId::Akita.commit_url(),
-            "https://github.com/LayerZero-Labs/akita/commit/81f5f777fd0484d2f4e7300fe089b622da34c772"
+            "https://github.com/LayerZero-Labs/akita/commit/5d765c9a862aaef8296bf3ac0f4f3dee25fb5051"
         );
         assert_eq!(
             SchemeId::Greyhound.commit_url(),
