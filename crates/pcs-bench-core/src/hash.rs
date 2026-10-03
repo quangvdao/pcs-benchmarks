@@ -52,7 +52,7 @@ pub const PLONKY3_REVISION: &str = "3acc8b70e68d6c2afc03930700c26540bd47458d";
 pub const PLONKY3_FRI_STIR_REVISION: &str = "3acc8b70e68d6c2afc03930700c26540bd47458d";
 
 /// Pinned [SP1 / SLOP](https://github.com/succinctlabs/sp1) revision (`slop-basefold`).
-pub const SP1_REVISION: &str = "0f2a1e1389747ac0dbee1c4d40243eed20baba86";
+pub const SP1_REVISION: &str = "edc07b68c92c17e4fc8658c39a2ef8d9ea5d95dc";
 
 /// Pinned [elliottech/plonky2](https://github.com/elliottech/plonky2) revision.
 pub const PLONKY2_REVISION: &str = "e1c2d35450948b88fca6a7e69e2643c3ecad3caa";
@@ -948,7 +948,7 @@ mod tests {
         );
         assert_eq!(
             HashSchemeId::Basefold.commit_url(),
-            "https://github.com/succinctlabs/sp1/commit/0f2a1e1389747ac0dbee1c4d40243eed20baba86"
+            "https://github.com/succinctlabs/sp1/commit/edc07b68c92c17e4fc8658c39a2ef8d9ea5d95dc"
         );
         assert_eq!(
             HashSchemeId::Plonky3Fri.revision(),

@@ -140,7 +140,7 @@ Do not mix machines, ISAs, or silently remap sizes.
 | Binius64 BaseFold | https://github.com/binius-zk/binius64 | [`6a179536`](https://github.com/binius-zk/binius64/commit/6a179536d90fcc76eeca0cee4e059f5e17efb459) |
 | Flock Ligerito | https://github.com/succinctlabs/flock | [`b684b125`](https://github.com/succinctlabs/flock/commit/b684b1258e4b1f202bec24afd660ace851b09e5e) |
 | WHIR (WorldFnd) | https://github.com/worldfnd/whir | [`8804e80e`](https://github.com/worldfnd/whir/commit/8804e80e8e890d01bb585f2bd5e5b564ac0fd80d) |
-| BaseFold (SLOP) | https://github.com/succinctlabs/sp1 | [`0f2a1e13`](https://github.com/succinctlabs/sp1/commit/0f2a1e1389747ac0dbee1c4d40243eed20baba86) |
+| BaseFold (SLOP) | https://github.com/succinctlabs/sp1 | [`edc07b68`](https://github.com/succinctlabs/sp1/commit/edc07b68c92c17e4fc8658c39a2ef8d9ea5d95dc) |
 
 Hash-eval adapters are isolated Cargo trees under `benchmarks/` so they do
 not unify with the lattice workspace. Their checked-in `Cargo.lock` files are

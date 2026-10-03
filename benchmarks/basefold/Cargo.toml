@@ -21,12 +21,12 @@ pcs-bench-core = { path = "../../crates/pcs-bench-core" }
 rand = "0.8"
 rayon = "1.10"
 serde_json = "1.0"
-slop-algebra = { git = "https://github.com/succinctlabs/sp1", rev = "0f2a1e1389747ac0dbee1c4d40243eed20baba86" }
-slop-basefold = { git = "https://github.com/succinctlabs/sp1", rev = "0f2a1e1389747ac0dbee1c4d40243eed20baba86" }
-slop-basefold-prover = { git = "https://github.com/succinctlabs/sp1", rev = "0f2a1e1389747ac0dbee1c4d40243eed20baba86" }
-slop-challenger = { git = "https://github.com/succinctlabs/sp1", rev = "0f2a1e1389747ac0dbee1c4d40243eed20baba86" }
-slop-commit = { git = "https://github.com/succinctlabs/sp1", rev = "0f2a1e1389747ac0dbee1c4d40243eed20baba86" }
-slop-koala-bear = { git = "https://github.com/succinctlabs/sp1", rev = "0f2a1e1389747ac0dbee1c4d40243eed20baba86" }
-slop-merkle-tree = { git = "https://github.com/succinctlabs/sp1", rev = "0f2a1e1389747ac0dbee1c4d40243eed20baba86" }
-slop-multilinear = { git = "https://github.com/succinctlabs/sp1", rev = "0f2a1e1389747ac0dbee1c4d40243eed20baba86" }
-slop-stacked = { git = "https://github.com/succinctlabs/sp1", rev = "0f2a1e1389747ac0dbee1c4d40243eed20baba86" }
+slop-algebra = { git = "https://github.com/succinctlabs/sp1", rev = "edc07b68c92c17e4fc8658c39a2ef8d9ea5d95dc" }
+slop-basefold = { git = "https://github.com/succinctlabs/sp1", rev = "edc07b68c92c17e4fc8658c39a2ef8d9ea5d95dc" }
+slop-basefold-prover = { git = "https://github.com/succinctlabs/sp1", rev = "edc07b68c92c17e4fc8658c39a2ef8d9ea5d95dc" }
+slop-challenger = { git = "https://github.com/succinctlabs/sp1", rev = "edc07b68c92c17e4fc8658c39a2ef8d9ea5d95dc" }
+slop-commit = { git = "https://github.com/succinctlabs/sp1", rev = "edc07b68c92c17e4fc8658c39a2ef8d9ea5d95dc" }
+slop-koala-bear = { git = "https://github.com/succinctlabs/sp1", rev = "edc07b68c92c17e4fc8658c39a2ef8d9ea5d95dc" }
+slop-merkle-tree = { git = "https://github.com/succinctlabs/sp1", rev = "edc07b68c92c17e4fc8658c39a2ef8d9ea5d95dc" }
+slop-multilinear = { git = "https://github.com/succinctlabs/sp1", rev = "edc07b68c92c17e4fc8658c39a2ef8d9ea5d95dc" }
+slop-stacked = { git = "https://github.com/succinctlabs/sp1", rev = "edc07b68c92c17e4fc8658c39a2ef8d9ea5d95dc" }
