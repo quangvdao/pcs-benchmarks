@@ -39,9 +39,11 @@ type FriPcsTy = TwoAdicFriPcs<F, Dft, ValMmcs, ChallengeMmcs>;
 type StirPcsTy = TwoAdicStirPcs<F, Dft, ValMmcs, ChallengeMmcs, EF, Challenger>;
 
 const FRI_PRESET: &str = "preset=p3-fri-new-benchmark,rate=1/2,fold=2,queries=100,query_pow_bits=16,security_model=random-words-conjecture,random_words_bits=113.744";
-const STIR_PRESET: &str = "preset=p3-stir-pcs-benchmark,rate=1/2,initial_fold=4,later_fold=4,security=100-capacity,max_phase_pow_bits=20,security_model=capacity-list-decoding+mutual-correlated-agreement";
+const STIR_PRESET: &str = "preset=p3-stir-pcs-benchmark,rate=1/2,initial_fold=4,later_fold=4,security=100-capacity,max_phase_pow_bits=20,batch_pow_bits=16,security_model=capacity-list-decoding+mutual-correlated-agreement";
 const STIR_LOG_FOLDING_FACTOR: usize = 2;
 const STIR_MAX_POW_BITS: usize = 20;
+/// Opening-batching grind of the upstream `stir_pcs` benchmark.
+const STIR_BATCH_POW_BITS: usize = 16;
 
 /// Which univariate protocol to run.
 #[derive(Clone, Copy)]
@@ -130,7 +132,8 @@ fn timed_univariate(kind: UniKind, log2_n: u32) -> Result<WorkerOutput, String> 
             )
             .map_err(|error| error.to_string())?;
             let dft = Dft::new(1 << (log_height + log_blowup));
-            let pcs = StirPcsTy::new(dft, val_mmcs, stir_params);
+            let pcs = StirPcsTy::new(dft, val_mmcs, stir_params)
+                .with_batch_proof_of_work_bits(STIR_BATCH_POW_BITS);
             let setup_ns = elapsed_ns(setup_start);
             let domain = Pcs::<EF, Challenger>::natural_domain_for_degree(&pcs, 1 << log_height);
             let mut rng = SmallRng::seed_from_u64(configured_seed(0x57113));
@@ -354,8 +357,8 @@ fn peak_rss_bytes() -> Option<u64> {
 #[cfg(test)]
 mod tests {
     use super::{
-        upstream_fri_parameters, upstream_stir_parameters, FRI_PRESET, STIR_LOG_FOLDING_FACTOR,
-        STIR_MAX_POW_BITS, STIR_PRESET,
+        upstream_fri_parameters, upstream_stir_parameters, FRI_PRESET, STIR_BATCH_POW_BITS,
+        STIR_LOG_FOLDING_FACTOR, STIR_MAX_POW_BITS, STIR_PRESET,
     };
     use p3_stir::SecurityAssumption;
     use pcs_bench_core::{
@@ -386,5 +389,7 @@ mod tests {
         assert_eq!(params.security_level, HASH_SECURITY_BITS_100 as usize);
         assert_eq!(params.max_pow_bits, STIR_MAX_POW_BITS);
         assert!(STIR_PRESET.contains("initial_fold=4,later_fold=4"));
+        assert_eq!(STIR_BATCH_POW_BITS, 16);
+        assert!(STIR_PRESET.contains("batch_pow_bits=16"));
     }
 }

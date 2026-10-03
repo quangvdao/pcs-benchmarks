@@ -67,7 +67,8 @@ profile whenever one exists. The five repaired profiles were remeasured on
   into height \(2^{23}\) and width \(2^{n-23}\) (footnote).
 - **Plonky3 STIR:** same pin and packing as FRI, using the upstream PCS
   benchmark profile: rate \(1/2\), fold 4 throughout, with at most 20 work
-  bits per phase and Poseidon2.
+  bits per phase, a 16-bit opening-batching grind
+  (`with_batch_proof_of_work_bits(16)`), and Poseidon2.
   The implementation validates an aggregate 100-bit target, conditional on
   capacity list decoding and mutual correlated agreement at capacity.
 - **WHIR (Plonky3):** `p3-whir`, 128-bit round-by-round target, the octic

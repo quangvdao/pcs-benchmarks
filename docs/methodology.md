@@ -131,8 +131,8 @@ rules that apply only to that table:
    unique-decoding WHIR rows. Plonky2 uses its approximately 100-bit standard-recursion FRI
    tuple. Plonky3 FRI uses the pinned upstream benchmark tuple, approximately
    113.744 bits under the pinned random-words estimate; STIR uses the upstream
-   fold-4 PCS benchmark schedule and validates an aggregate 100-bit
-   capacity-regime target. Binius64 uses its product-default 96-bit
+   fold-4 PCS benchmark schedule with its 16-bit opening-batching grind and
+   validates an aggregate 100-bit capacity-regime target. Binius64 uses its product-default 96-bit
    unique-decoding query target. Flock uses its default Fast profile at
    128-bit round-by-round soundness. WorldFnd WHIR uses its 128-bit CLI-default
    Johnson configuration. SP1 BaseFold uses its 100-bit product parameters.

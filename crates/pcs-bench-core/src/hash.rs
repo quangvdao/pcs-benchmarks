@@ -124,8 +124,9 @@ const PLONKY3_FRI_RANDOM_WORDS_BITS: f64 = 113.744_139_402_344_4;
 /// Canonical result identity for the pinned upstream Plonky3 FRI benchmark preset.
 const PLONKY3_FRI_NATIVE_PARAM: &str = "plonky3-fri-new-benchmark-r1-f2-q100-qp16-rw113744";
 
-/// Canonical result identity for the fold-4 Plonky3 STIR benchmark profile.
-const PLONKY3_STIR_NATIVE_PARAM: &str = "plonky3-stir-cap100-r1-f4-maxpow20";
+/// Canonical result identity for the fold-4 Plonky3 STIR benchmark profile,
+/// including its 16-bit opening-batching grind.
+const PLONKY3_STIR_NATIVE_PARAM: &str = "plonky3-stir-cap100-r1-f4-maxpow20-bp16";
 
 /// Canonical result identity for the Plonky3 WHIR profile over the octic
 /// KoalaBear challenge field.
