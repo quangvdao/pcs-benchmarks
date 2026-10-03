@@ -136,7 +136,7 @@ Do not mix machines, ISAs, or silently remap sizes.
 | Plonky2 FRI | https://github.com/elliottech/plonky2 | [`e1c2d354`](https://github.com/elliottech/plonky2/commit/e1c2d35450948b88fca6a7e69e2643c3ecad3caa) |
 | Plonky3 FRI / STIR | https://github.com/Plonky3/Plonky3 | [`3acc8b70`](https://github.com/Plonky3/Plonky3/commit/3acc8b70e68d6c2afc03930700c26540bd47458d) |
 | WHIR (`p3-whir`) | https://github.com/Plonky3/Plonky3 | [`3acc8b70`](https://github.com/Plonky3/Plonky3/commit/3acc8b70e68d6c2afc03930700c26540bd47458d) |
-| Binius64 BaseFold | https://github.com/binius-zk/binius64 | [`6e75a2d1`](https://github.com/binius-zk/binius64/commit/6e75a2d1d2e716578ae3ccb62806413fb1615176) |
+| Binius64 BaseFold | https://github.com/binius-zk/binius64 | [`6a179536`](https://github.com/binius-zk/binius64/commit/6a179536d90fcc76eeca0cee4e059f5e17efb459) |
 | Flock Ligerito | https://github.com/succinctlabs/flock | [`43f0eee0`](https://github.com/succinctlabs/flock/commit/43f0eee06d887d87ad25d72614cbc2b17fe91430) |
 | WHIR (WorldFnd) | https://github.com/worldfnd/whir | [`8804e80e`](https://github.com/worldfnd/whir/commit/8804e80e8e890d01bb585f2bd5e5b564ac0fd80d) |
 | BaseFold (SLOP) | https://github.com/succinctlabs/sp1 | [`0f2a1e13`](https://github.com/succinctlabs/sp1/commit/0f2a1e1389747ac0dbee1c4d40243eed20baba86) |

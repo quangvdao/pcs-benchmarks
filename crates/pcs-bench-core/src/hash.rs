@@ -58,7 +58,7 @@ pub const SP1_REVISION: &str = "0f2a1e1389747ac0dbee1c4d40243eed20baba86";
 pub const PLONKY2_REVISION: &str = "e1c2d35450948b88fca6a7e69e2643c3ecad3caa";
 
 /// Pinned [Binius64](https://github.com/binius-zk/binius64) revision.
-pub const BINIUS64_REVISION: &str = "6e75a2d1d2e716578ae3ccb62806413fb1615176";
+pub const BINIUS64_REVISION: &str = "6a179536d90fcc76eeca0cee4e059f5e17efb459";
 
 /// Pinned [Flock](https://github.com/succinctlabs/flock) revision.
 pub const FLOCK_REVISION: &str = "43f0eee06d887d87ad25d72614cbc2b17fe91430";

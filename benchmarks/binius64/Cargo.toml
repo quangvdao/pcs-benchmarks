@@ -16,15 +16,15 @@ name = "hash-eval"
 path = "src/bin/hash_eval.rs"
 
 [dependencies]
-binius-compute = { git = "https://github.com/binius-zk/binius64", rev = "6e75a2d1d2e716578ae3ccb62806413fb1615176" }
-binius-field = { git = "https://github.com/binius-zk/binius64", rev = "6e75a2d1d2e716578ae3ccb62806413fb1615176" }
-binius-hash = { git = "https://github.com/binius-zk/binius64", rev = "6e75a2d1d2e716578ae3ccb62806413fb1615176" }
-binius-iop = { git = "https://github.com/binius-zk/binius64", rev = "6e75a2d1d2e716578ae3ccb62806413fb1615176" }
-binius-iop-prover = { git = "https://github.com/binius-zk/binius64", rev = "6e75a2d1d2e716578ae3ccb62806413fb1615176" }
-binius-ip = { git = "https://github.com/binius-zk/binius64", rev = "6e75a2d1d2e716578ae3ccb62806413fb1615176" }
-binius-ip-prover = { git = "https://github.com/binius-zk/binius64", rev = "6e75a2d1d2e716578ae3ccb62806413fb1615176" }
-binius-math = { git = "https://github.com/binius-zk/binius64", rev = "6e75a2d1d2e716578ae3ccb62806413fb1615176", features = ["test-utils"] }
-binius-transcript = { git = "https://github.com/binius-zk/binius64", rev = "6e75a2d1d2e716578ae3ccb62806413fb1615176" }
+binius-compute = { git = "https://github.com/binius-zk/binius64", rev = "6a179536d90fcc76eeca0cee4e059f5e17efb459" }
+binius-field = { git = "https://github.com/binius-zk/binius64", rev = "6a179536d90fcc76eeca0cee4e059f5e17efb459" }
+binius-hash = { git = "https://github.com/binius-zk/binius64", rev = "6a179536d90fcc76eeca0cee4e059f5e17efb459" }
+binius-iop = { git = "https://github.com/binius-zk/binius64", rev = "6a179536d90fcc76eeca0cee4e059f5e17efb459" }
+binius-iop-prover = { git = "https://github.com/binius-zk/binius64", rev = "6a179536d90fcc76eeca0cee4e059f5e17efb459" }
+binius-ip = { git = "https://github.com/binius-zk/binius64", rev = "6a179536d90fcc76eeca0cee4e059f5e17efb459" }
+binius-ip-prover = { git = "https://github.com/binius-zk/binius64", rev = "6a179536d90fcc76eeca0cee4e059f5e17efb459" }
+binius-math = { git = "https://github.com/binius-zk/binius64", rev = "6a179536d90fcc76eeca0cee4e059f5e17efb459", features = ["test-utils"] }
+binius-transcript = { git = "https://github.com/binius-zk/binius64", rev = "6a179536d90fcc76eeca0cee4e059f5e17efb459" }
 pcs-bench-core = { path = "../../crates/pcs-bench-core" }
 rand = { version = "0.10.1", features = ["std", "std_rng"] }
 rayon = "1.10"
