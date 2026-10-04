@@ -73,8 +73,8 @@ pub const ROKOKO_Q50: FieldSpec = FieldSpec {
     log2_bits: 50,
 };
 
-/// Pinned Akita revision (immutable git SHA; head of LayerZero-Labs/akita#177).
-pub const AKITA_REVISION: &str = "5d765c9a862aaef8296bf3ac0f4f3dee25fb5051";
+/// Pinned Akita revision (immutable git SHA; `dev` branch, built with `dev-protocol`).
+pub const AKITA_REVISION: &str = "12d486b0bca2814956d480aa121130e2702f8612";
 
 /// Pinned Greyhound reference revision (`LayerZero-Labs/greyhound-reference`).
 pub const GREYHOUND_REVISION: &str = "672e74100496f6ef698ba35e241cf7593e3d57af";
@@ -411,7 +411,7 @@ mod tests {
         );
         assert_eq!(
             SchemeId::Akita.commit_url(),
-            "https://github.com/LayerZero-Labs/akita/commit/5d765c9a862aaef8296bf3ac0f4f3dee25fb5051"
+            "https://github.com/LayerZero-Labs/akita/commit/12d486b0bca2814956d480aa121130e2702f8612"
         );
         assert_eq!(
             SchemeId::Greyhound.commit_url(),

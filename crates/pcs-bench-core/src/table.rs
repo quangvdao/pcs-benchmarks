@@ -1230,7 +1230,7 @@ mod tests {
         ];
         let rows = aggregate_timing_rows(&records);
         let latex = render_latex_timing_table(&rows);
-        assert!(latex.contains(r"\href{https://github.com/LayerZero-Labs/akita/commit/5d765c9a862aaef8296bf3ac0f4f3dee25fb5051}{Akita}"));
+        assert!(latex.contains(r"\href{https://github.com/LayerZero-Labs/akita/commit/12d486b0bca2814956d480aa121130e2702f8612}{Akita}"));
         assert!(latex.contains("0.159"));
         assert!(latex.contains("2.07"));
         assert!(latex.contains(r"\evalunsupported"));

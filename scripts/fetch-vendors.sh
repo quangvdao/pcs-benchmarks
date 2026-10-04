@@ -68,7 +68,7 @@ if [[ "$FETCH_AKITA" -eq 1 ]]; then
   clone_pin \
     https://github.com/LayerZero-Labs/akita.git \
     "$ROOT/third_party/akita" \
-    5d765c9a862aaef8296bf3ac0f4f3dee25fb5051
+    12d486b0bca2814956d480aa121130e2702f8612
 fi
 
 echo "Vendors pinned under $ROOT/third_party"

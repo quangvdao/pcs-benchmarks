@@ -5,7 +5,7 @@
 //! contaminating one another.
 
 /// Exact Akita source revision measured by this adapter.
-pub const IMPLEMENTATION_REVISION: &str = "5d765c9a862aaef8296bf3ac0f4f3dee25fb5051";
+pub const IMPLEMENTATION_REVISION: &str = "12d486b0bca2814956d480aa121130e2702f8612";
 
 /// Pinned upstream or supplemental artifact embedded so the executable hash also
 /// identifies the schedules used by setup and verification.
@@ -14,46 +14,46 @@ pub fn schedule_catalog<Cfg: akita_config::CommitmentConfig>(
 ) -> Result<akita_config::TrustedScheduleCatalog<Cfg>, String> {
     let bytes: &[u8] = match (Cfg::schedule_family_name(), num_vars) {
         ("fp32_dense", 22) => {
-            include_bytes!("../../../vendor/akita-catalogs/5d765c9a/fp32-nv22/fp32_dense.aks")
+            include_bytes!("../../../vendor/akita-catalogs/12d486b0/fp32-nv22/fp32_dense.aks")
         }
         ("fp32_dense", 24) => {
-            include_bytes!("../../../vendor/akita-catalogs/5d765c9a/fp32-nv24/fp32_dense.aks")
+            include_bytes!("../../../vendor/akita-catalogs/12d486b0/fp32-nv24/fp32_dense.aks")
         }
         ("fp64_dense", 21) => {
-            include_bytes!("../../../vendor/akita-catalogs/5d765c9a/fp64-nv21/fp64_dense.aks")
+            include_bytes!("../../../vendor/akita-catalogs/12d486b0/fp64-nv21/fp64_dense.aks")
         }
         ("fp64_dense", 23) => {
-            include_bytes!("../../../vendor/akita-catalogs/5d765c9a/fp64-nv23/fp64_dense.aks")
+            include_bytes!("../../../vendor/akita-catalogs/12d486b0/fp64-nv23/fp64_dense.aks")
         }
         ("fp64_dense", 25) => {
-            include_bytes!("../../../vendor/akita-catalogs/5d765c9a/fp64-nv25/fp64_dense.aks")
+            include_bytes!("../../../vendor/akita-catalogs/12d486b0/fp64-nv25/fp64_dense.aks")
         }
         ("fp64_dense", 27) => {
-            include_bytes!("../../../vendor/akita-catalogs/5d765c9a/fp64-nv27/fp64_dense.aks")
+            include_bytes!("../../../vendor/akita-catalogs/12d486b0/fp64-nv27/fp64_dense.aks")
         }
         ("fp128_dense", 20) => {
-            include_bytes!("../../../vendor/akita-catalogs/5d765c9a/fp128-nv20/fp128_dense.aks")
+            include_bytes!("../../../vendor/akita-catalogs/12d486b0/fp128-nv20/fp128_dense.aks")
         }
         ("fp128_dense", 22) => {
-            include_bytes!("../../../vendor/akita-catalogs/5d765c9a/fp128-nv22/fp128_dense.aks")
+            include_bytes!("../../../vendor/akita-catalogs/12d486b0/fp128-nv22/fp128_dense.aks")
         }
         ("fp32_dense", _) => {
-            include_bytes!("../../../third_party/akita/artifacts/schedules/fp32_dense.aks")
+            include_bytes!("../../../third_party/akita/artifacts/schedules-dev/fp32_dense.aks")
         }
         ("fp64_dense", _) => {
-            include_bytes!("../../../third_party/akita/artifacts/schedules/fp64_dense.aks")
+            include_bytes!("../../../third_party/akita/artifacts/schedules-dev/fp64_dense.aks")
         }
         ("fp128_dense", _) => {
-            include_bytes!("../../../third_party/akita/artifacts/schedules/fp128_dense.aks")
+            include_bytes!("../../../third_party/akita/artifacts/schedules-dev/fp128_dense.aks")
         }
         ("fp32_dense_recursive", _) => include_bytes!(
-            "../../../third_party/akita/artifacts/schedules/fp32_dense_recursive.aks"
+            "../../../third_party/akita/artifacts/schedules-dev/fp32_dense_recursive.aks"
         ),
         ("fp64_dense_recursive", _) => include_bytes!(
-            "../../../third_party/akita/artifacts/schedules/fp64_dense_recursive.aks"
+            "../../../third_party/akita/artifacts/schedules-dev/fp64_dense_recursive.aks"
         ),
         ("fp128_dense_recursive", _) => include_bytes!(
-            "../../../third_party/akita/artifacts/schedules/fp128_dense_recursive.aks"
+            "../../../third_party/akita/artifacts/schedules-dev/fp128_dense_recursive.aks"
         ),
         (family, _) => return Err(format!("unsupported Akita schedule family: {family}")),
     };

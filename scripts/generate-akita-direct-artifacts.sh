@@ -4,16 +4,16 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 AKITA="$ROOT/third_party/akita"
-PIN=5d765c9a862aaef8296bf3ac0f4f3dee25fb5051
+PIN=12d486b0bca2814956d480aa121130e2702f8612
 [[ "$(git -C "$AKITA" rev-parse HEAD)" == "$PIN" ]]
 [[ -z "$(git -C "$AKITA" status --porcelain)" ]]
 export CARGO_TARGET_DIR="$ROOT/target/akita-planner"
 cargo build --release --locked --manifest-path "$AKITA/Cargo.toml" \
-  -p akita-planner --features catalog-gen --bin gen_schedule_artifacts
+  -p akita-planner --features catalog-gen,dev-protocol --bin gen_schedule_artifacts
 for row in fp32:22 fp32:24 fp64:21 fp64:23 fp64:25 fp64:27 fp128:20 fp128:22; do
   field="${row%:*}"
   nv="${row#*:}"
   "$CARGO_TARGET_DIR/release/gen_schedule_artifacts" \
-    "$ROOT/vendor/akita-catalogs/5d765c9a/$field-nv$nv" \
+    "$ROOT/vendor/akita-catalogs/12d486b0/$field-nv$nv" \
     --row-progress --final-group "${field}_dense:$nv:1"
 done
