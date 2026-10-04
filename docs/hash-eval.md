@@ -54,11 +54,32 @@ profile whenever one exists. The five repaired profiles were remeasured on
   | \(2^{31}\) | offload | offload | — |
   | \(2^{33}\) | offload | offload | offload |
   | \(2^{35}\) | offload | offload | offload |
-- **Plonky2 FRI:** `elliottech/plonky2`, univariate Goldilocks, rate \(1/8\),
-  28 queries, 16-bit PoW, Poseidon2, and approximately 100-bit conjectural
-  soundness. The LDE has
-  length \(2^{n+3}\). Payload \(2^{33}\) (\(\log_2 N=27\)) and \(2^{35}\)
-  (\(\log_2 N=29\)) OOM under the 90% RAM cap.
+- **Plonky2 FRI:** `elliottech/plonky2`, univariate Goldilocks, Poseidon2,
+  16-to-1 folding, with a quartic challenge field, rate \(1/2\), 172
+  queries, and 16-bit PoW. This is not a shipped Plonky2 configuration. The
+  standard recursion tuple (quadratic challenge field, rate \(1/8\), 28
+  queries) reaches 100 bits only under the conjectured FRI bound, and no
+  query count repairs it: the commit-phase error is at least
+  \(|D|/|\mathbb K|\), so a 128-bit challenge field gives at most about
+  \(121-n\) proven bits at rate \(1/8\), below 100 on every row of this
+  matrix. The worker therefore instantiates Plonky2's own generic
+  `QuarticExtension<GoldilocksField>` as the challenge field and takes its
+  query count from the proven Johnson-regime FRI bound of BCIKS20
+  (ePrint 2020/654, Theorem 8.3) with proximity parameter \(m = 64\) and
+  the DEEP quotient charged at the squared Johnson list size; grinding
+  multiplies the query term by \(2^{-16}\). The algebraic terms stay above
+  150 bits up to \(\log_2 N = 30\), and 172 is the smallest query count at
+  100 bits (rate \(1/4\) needs 85, rate \(1/8\) needs 57). The bound is a
+  hand derivation in the worker, which recomputes it for every run and fails
+  below 100 bits; the pinned library ships no calculator for it. Measured at
+  \(\log_2 N\) 20 and 22, rate \(1/2\) proved twice as fast as rate
+  \(1/4\) and four times as fast as rate \(1/8\), with a proof 1.7 and 2.5
+  times larger; 16-to-1 folding and 16 work bits were at least as fast as
+  8-to-1 folding or 20 work bits. The LDE has length \(2^{n+1}\). Payload
+  \(2^{33}\) (\(\log_2 N=27\)) and \(2^{35}\) (\(\log_2 N=29\)) ran
+  out of memory under the 90% RAM cap with the previous rate \(1/8\)
+  profile and have not been remeasured; at equal size the new profile peaks
+  at roughly a third of the previous profile's memory.
 - **Plonky3 FRI:** univariate KoalaBear with the pinned upstream
   `FriParameters::new_benchmark_high_arity` profile (rate \(1/2\), folding
   up to 8-to-1, 16-bit query-phase grind, 10-bit batching grind, Poseidon2)

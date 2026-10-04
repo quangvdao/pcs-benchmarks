@@ -130,14 +130,21 @@ const PLONKY3_STIR_NATIVE_PARAM: &str = "plonky3-stir-johnson100-r1-f16-maxpow16
 /// KoalaBear challenge field under the Johnson bound.
 const PLONKY3_WHIR_NATIVE_PARAM: &str = "whir-128-ext8-johnson";
 
-/// Plonky2 FRI log-inverse rate (`rho = 1/8`).
-pub const PLONKY2_FRI_RATE_BITS: usize = 3;
+/// Plonky2 FRI log-inverse rate (`rho = 1/2`).
+pub const PLONKY2_FRI_RATE_BITS: usize = 1;
 
-/// Plonky2 FRI queries at its standard approximately 100-bit conjectural target.
-pub const PLONKY2_FRI_QUERIES: usize = 28;
+/// Plonky2 FRI queries: the smallest count that reaches 100 bits under the
+/// proven Johnson-regime FRI bound (BCIKS20, Theorem 8.3) at rate 1/2 with
+/// 16 grinding bits over the quartic Goldilocks challenge field. The worker
+/// recomputes the bound and refuses to run below the target.
+pub const PLONKY2_FRI_QUERIES: usize = 172;
 
 /// Plonky2 FRI grinding bits.
 pub const PLONKY2_FRI_POW_BITS: usize = 16;
+
+/// Canonical result identity for the Plonky2 FRI profile: quartic challenge
+/// field, rate 1/2, proven Johnson-regime query count.
+const PLONKY2_FRI_NATIVE_PARAM: &str = "plonky2-fri-ext4-r1-f16-q172-p16-johnson100";
 
 /// Plonky2 Merkle cap height (standard recursion config).
 pub const PLONKY2_CAP_HEIGHT: usize = 4;
@@ -391,8 +398,7 @@ impl HashSchemeId {
             | Self::AkitaFp64Offload
             | Self::AkitaFp128
             | Self::AkitaFp128Offload => "128-bit Module-SIS/ROM",
-            Self::Plonky2Fri => "approx. 100-bit conjectural",
-            Self::Plonky3Fri | Self::Plonky3Stir => "100-bit Johnson",
+            Self::Plonky2Fri | Self::Plonky3Fri | Self::Plonky3Stir => "100-bit Johnson",
             Self::Whir | Self::FlockLigerito | Self::WhirProvekit => "128-bit RBR",
             Self::Binius64 => "96-bit UDR query",
             Self::Basefold => "100-bit UDR query",
@@ -614,7 +620,7 @@ fn hash_case_inner(payload_log2: u32, scheme: HashSchemeId, threads: u32) -> Has
             field: GOLDILOCKS,
             log2_n: log2_n_for_payload_bits(payload_log2, 64),
             threads,
-            native_param: "plonky2-fri-100",
+            native_param: PLONKY2_FRI_NATIVE_PARAM,
         },
         HashSchemeId::Plonky3Fri => HashCase {
             payload_log2,
@@ -811,6 +817,11 @@ mod tests {
                 })
                 .expect("plonky2");
             assert_eq!(p2.log2_n, log2_n_for_payload_bits(payload, 64));
+            assert_eq!(
+                p2.native_param,
+                "plonky2-fri-ext4-r1-f16-q172-p16-johnson100"
+            );
+            assert_eq!(p2.scheme.security_label(), "100-bit Johnson");
             let flock = matrix
                 .iter()
                 .find(|case| {

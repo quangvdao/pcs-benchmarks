@@ -1,9 +1,16 @@
 //! Single-shot Plonky2 univariate FRI worker (Goldilocks, Poseidon2).
+//!
+//! The opening point and every FRI challenge are drawn from the quartic
+//! extension of Goldilocks rather than the quadratic extension of Plonky2's
+//! shipped configurations. Over the quadratic extension (about 128 bits) no
+//! proven FRI bound reaches 100 bits at the benchmarked sizes; see
+//! `proven_bits`.
 
 use pcs_bench_core::{
-    RunStatus, WorkerOutput, PLONKY2_CAP_HEIGHT, PLONKY2_FRI_POW_BITS, PLONKY2_FRI_QUERIES,
-    PLONKY2_FRI_RATE_BITS,
+    RunStatus, WorkerOutput, HASH_SECURITY_BITS_100, PLONKY2_CAP_HEIGHT, PLONKY2_FRI_POW_BITS,
+    PLONKY2_FRI_QUERIES, PLONKY2_FRI_RATE_BITS,
 };
+use plonky2::field::extension::quartic::QuarticExtension;
 use plonky2::field::extension::{Extendable, FieldExtension};
 use plonky2::field::goldilocks_field::GoldilocksField;
 use plonky2::field::polynomial::PolynomialValues;
@@ -14,9 +21,10 @@ use plonky2::fri::structure::{
     FriBatchInfo, FriInstanceInfo, FriOpeningBatch, FriOpenings, FriOracleInfo, FriPolynomialInfo,
 };
 use plonky2::fri::verifier::verify_fri_proof;
-use plonky2::fri::FriConfig;
+use plonky2::fri::{FriConfig, FriParams};
+use plonky2::hash::poseidon2::hash::Poseidon2Hash;
 use plonky2::iop::challenger::Challenger;
-use plonky2::plonk::config::{GenericConfig, Poseidon2GoldilocksConfig};
+use plonky2::plonk::config::GenericConfig;
 use plonky2::util::timing::TimingTree;
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
@@ -25,9 +33,28 @@ use std::io::{self, Write};
 use std::process::ExitCode;
 use std::time::Instant;
 
-type C = Poseidon2GoldilocksConfig;
+/// `Poseidon2GoldilocksConfig` with the quartic instead of the quadratic
+/// extension as the challenge field. Hashing is unchanged.
+#[derive(Debug, Copy, Clone, Default, Eq, PartialEq, serde::Serialize)]
+struct Poseidon2GoldilocksQuarticConfig;
+
+impl GenericConfig<D> for Poseidon2GoldilocksQuarticConfig {
+    type F = GoldilocksField;
+    type FE = QuarticExtension<GoldilocksField>;
+    type Hasher = Poseidon2Hash;
+    type InnerHasher = Poseidon2Hash;
+}
+
+type C = Poseidon2GoldilocksQuarticConfig;
 type F = GoldilocksField;
-const D: usize = 2;
+const D: usize = 4;
+
+/// `log2` of the challenge-field size, rounded down to two decimals.
+const CHALLENGE_FIELD_BITS: f64 = 255.99;
+/// Johnson-regime multiplicity parameter `m` of BCIKS20 Theorem 8.3. It is
+/// fixed rather than optimised so that the commit-phase term keeps more than
+/// 40 bits of margin at every benchmarked size.
+const JOHNSON_M: f64 = 64.0;
 
 fn main() -> ExitCode {
     let threads = parse_u32_flag("--threads").unwrap_or(1).max(1);
@@ -72,6 +99,12 @@ fn timed_fri(log2_n: u32) -> Result<WorkerOutput, String> {
         num_query_rounds: PLONKY2_FRI_QUERIES,
     };
     let fri_params = fri_config.fri_params(degree_bits, false);
+    let proven = proven_bits(degree_bits, &fri_params);
+    if proven < f64::from(HASH_SECURITY_BITS_100) {
+        return Err(format!(
+            "Plonky2 FRI profile proves only {proven:.2} bits at log2 N = {degree_bits}"
+        ));
+    }
     let mut timing = TimingTree::default();
     let setup_ns = elapsed_ns(t0);
 
@@ -208,10 +241,12 @@ fn timed_fri(log2_n: u32) -> Result<WorkerOutput, String> {
     Ok(WorkerOutput {
         status: RunStatus::Ok,
         status_detail: Some(format!(
-            "plonky2-fri-100,statement=univariate,distribution=full-field-uniform,point=transcript-extension,rate=1/{},queries={},pow_bits={}",
+            "plonky2-fri-100-johnson,statement=univariate,distribution=full-field-uniform,point=transcript-extension,challenge_field=goldilocks-ext4,rate=1/{},queries={},pow_bits={},security_model=proven-johnson-bciks20,johnson_m={},proven_bits={:.2}",
             1usize << PLONKY2_FRI_RATE_BITS,
             PLONKY2_FRI_QUERIES,
-            PLONKY2_FRI_POW_BITS
+            PLONKY2_FRI_POW_BITS,
+            JOHNSON_M,
+            proven
         )),
         log2_n: Some(log2_n),
         timings_ns,
@@ -222,6 +257,55 @@ fn timed_fri(log2_n: u32) -> Result<WorkerOutput, String> {
         state_bytes: Some(0),
         peak_rss_bytes: peak_rss_bytes(),
     })
+}
+
+/// Proven soundness, in bits, of one opening in the Johnson regime.
+///
+/// Hand-derived from the FRI soundness theorem of Ben-Sasson, Carmon, Ishai,
+/// Kopparty and Saraf, "Proximity Gaps for Reed-Solomon Codes" (eprint
+/// 2020/654), Theorem 8.3. With rate `rho`, initial domain `D0`, folding
+/// arities `a_i`, `s` queries, challenge field `K`, and an integer `m >= 3`,
+///
+/// ```text
+/// alpha   = sqrt(rho) * (1 + 1/(2m))
+/// eps_C   = (m + 1/2)^7 * |D0|^2 / (2 * rho^(3/2) * |K|)
+///         + (2m + 1) * (|D0| + 1) * (sum a_i) / (sqrt(rho) * |K|)
+/// eps_FRI = eps_C + alpha^s
+/// ```
+///
+/// The query term is multiplied by `2^-pow_bits` for the grind that precedes
+/// the query indices. The out-of-domain quotient is charged
+/// `L^2 * 2^n / |K|` with the Johnson list size `L = (m + 1/2) / sqrt(rho)`.
+/// The result is `-log2` of the sum of all terms. No conjecture on proximity
+/// gaps or list decoding beyond the Johnson radius is used.
+fn proven_bits(degree_bits: usize, fri_params: &FriParams) -> f64 {
+    let m = JOHNSON_M;
+    let rate_bits = fri_params.config.rate_bits as f64;
+    let log_domain = degree_bits as f64 + rate_bits;
+    let arity_sum: f64 = fri_params
+        .reduction_arity_bits
+        .iter()
+        .map(|&bits| (1u64 << bits) as f64)
+        .sum::<f64>()
+        .max(1.0);
+    let log_list = (m + 0.5).log2() + rate_bits / 2.0;
+    let log_alpha = -rate_bits / 2.0 + (1.0 + 1.0 / (2.0 * m)).log2();
+    let terms = [
+        7.0 * (m + 0.5).log2() + 2.0 * log_domain - 1.0 + 1.5 * rate_bits,
+        (2.0 * m + 1.0).log2()
+            + (log_domain.exp2() + 1.0).log2()
+            + arity_sum.log2()
+            + rate_bits / 2.0,
+        2.0 * log_list + degree_bits as f64,
+    ];
+    let algebraic: f64 = terms
+        .iter()
+        .map(|log_numerator| (log_numerator - CHALLENGE_FIELD_BITS).exp2())
+        .sum();
+    let query = (fri_params.config.num_query_rounds as f64 * log_alpha
+        - f64::from(fri_params.config.proof_of_work_bits))
+    .exp2();
+    -(algebraic + query).log2()
 }
 
 fn bincode_len<T: serde::Serialize>(value: &T) -> Option<u64> {
@@ -293,4 +377,39 @@ fn peak_rss_bytes() -> Option<u64> {
         return Some(kb.saturating_mul(1024));
     }
     None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{proven_bits, FriConfig, FriReductionStrategy};
+    use pcs_bench_core::{
+        HASH_SECURITY_BITS_100, PLONKY2_CAP_HEIGHT, PLONKY2_FRI_POW_BITS, PLONKY2_FRI_QUERIES,
+        PLONKY2_FRI_RATE_BITS,
+    };
+
+    fn bits(degree_bits: usize, queries: usize) -> f64 {
+        let config = FriConfig {
+            rate_bits: PLONKY2_FRI_RATE_BITS,
+            cap_height: PLONKY2_CAP_HEIGHT,
+            proof_of_work_bits: PLONKY2_FRI_POW_BITS as u32,
+            reduction_strategy: FriReductionStrategy::ConstantArityBits(4, 5),
+            num_query_rounds: queries,
+        };
+        proven_bits(degree_bits, &config.fri_params(degree_bits, false))
+    }
+
+    #[test]
+    fn query_count_is_the_smallest_that_proves_100_bits() {
+        let target = f64::from(HASH_SECURITY_BITS_100);
+        for degree_bits in 10..=30 {
+            assert!(bits(degree_bits, PLONKY2_FRI_QUERIES) >= target);
+            assert!(bits(degree_bits, PLONKY2_FRI_QUERIES - 1) < target);
+        }
+    }
+
+    #[test]
+    fn commit_phase_terms_keep_a_wide_margin() {
+        // With unbounded queries only the field-size terms remain.
+        assert!(bits(30, 4096) > 140.0);
+    }
 }
