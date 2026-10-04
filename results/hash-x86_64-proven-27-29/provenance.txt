@@ -1,0 +1,36 @@
+Proven-regime hash rows at 2^27 and 2^29 (Plonky2 FRI, Plonky3 FRI/STIR, WHIR)
+Same host and date as results/hash-x86_64; kept separate because a scheme's rows in one report must come from one run.
+
+records=176
+records_sha256=cfaeee68029b0365954817e09411087d4f54e859298be39fdd10724aaf45a4a9
+
+[cohort 1]
+harness_revision=b42afcf4c0bffdf00e219a75612704b449c19660+dirty.bd1c02ccd158
+timestamp_utc=2026-10-04T02:04:52Z
+run_command=target/release/pcs-bench hash-eval run --scheme plonky2-fri,plonky3-fri,plonky3-stir,whir --payload 27,29,31,33,35 --threads 1,8 --runs 10 --warmups 1 --seed-mode vary --out run-hash-proven
+rustc_version=rustc 1.95.0 (59807616e 2026-04-14)
+binary: rustc
+commit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860
+commit-date: 2026-04-14
+host: x86_64-unknown-linux-gnu
+release: 1.95.0
+LLVM version: 22.1.2
+target=Linux x86_64
+cpu_model=AMD Ryzen 9 9950X 16-Core Processor
+cpu_scaling_driver=amd-pstate-epp
+cpu_governor=powersave
+cpu_energy_preference=balance_performance
+machine_id_hash=e99e4755064c91d7
+rustflags=-C target-cpu=native
+avx512=true
+isa_notes=AVX-512F advertised; native-target code generation requested
+logical_cpus=32
+memory_bytes=200061865984
+memory_limit_bytes=180055679385
+seed_mode=vary
+plonky2_fri_revision=e1c2d35450948b88fca6a7e69e2643c3ecad3caa
+plonky3_fri_revision=3acc8b70e68d6c2afc03930700c26540bd47458d
+plonky3_stir_revision=3acc8b70e68d6c2afc03930700c26540bd47458d
+whir_revision=3acc8b70e68d6c2afc03930700c26540bd47458d
+schemes=plonky2_fri,plonky3_fri,plonky3_stir,whir
+records=176

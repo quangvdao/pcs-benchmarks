@@ -10,6 +10,11 @@ written to:
 - `results/lattice-x86_64/`
 - `results/hash-x86_64/`
 
+A scheme's rows in one report must come from one run. The Plonky2 FRI rows and
+the 2^27 to 2^31 rows of Plonky3 FRI/STIR and WHIR were measured in separate
+runs on the same host and are reported in `results/hash-x86_64-proven-27-29/`
+and `results/hash-x86_64-proven-31/`.
+
 Results from another schema, machine cohort, seed schedule, build, or workload
 configuration are rejected rather than silently combined.
 

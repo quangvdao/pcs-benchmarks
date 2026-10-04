@@ -1,29 +1,104 @@
 Combined hash-x86_64 dataset
 records.jsonl is the authoritative per-observation provenance.
-Akita refreshed on 2026-09-16/17; Plonky3 FRI/STIR, Binius64, SP1, and WorldFnd refreshed on 2026-09-17.
-Other schemes retain their existing measurements. All harness revisions are clean.
-No claim of contemporaneous measurement across cohorts.
+All cohorts were measured on 2026-10-03/04 on one host (AMD Ryzen 9 9950X). Akita is pinned to 12d486b0.
+Each scheme's rows come from one run. Plonky3 FRI/STIR and WHIR appear here at 2^33 and 2^35 only;
+their 2^27-2^31 rows and all Plonky2 rows come from other runs on the same host and are reported in
+results/hash-x86_64-proven-27-29 and results/hash-x86_64-proven-31.
+Not measured in this refresh: BaseFold 2^35, WHIR (ProveKit) 2^35, Plonky2 2^33 and 2^35.
 
-records=1540
-records_sha256=a7fe64aa8b2f1d25f28526f469ffd04e3b3f393709008ad29a45ac27a3915f0d
+records=1188
+records_sha256=057117977bfee287d6bcdaec44ff0b9b72fcb79f31ea98087fa9e6da84c15f18
 
 [cohort 1]
-harness_revision=50ddf4db992358a2cf394b3d5c99e964d13e5c90
-timestamp_utc=2026-09-09T19:42:36Z
-run_command=target/release/pcs-bench hash-eval run --out results/hash-x86_64-clean
-schemes=flock_ligerito,plonky2_fri,whir
-records=330
-
-[cohort 2]
-harness_revision=815500d73fb79d3b69d68f23f412ad8eead77584
-timestamp_utc=2026-09-17T04:02:45Z
-run_command=target/release/pcs-bench hash-eval run --scheme plonky3-fri,plonky3-stir,binius64,basefold,worldfnd --payload 27,29,31,33,35 --threads 1,8 --runs 10 --warmups 1 --seed-mode vary --out results/hash-x86_64
-schemes=basefold,binius64,plonky3_fri,plonky3_stir,whir_provekit
-records=550
-
-[cohort 3]
-harness_revision=add6dc0eeee27d744ee72a78195d1eca5a7d1549
-timestamp_utc=2026-09-16T23:33:51Z
-run_command=target/release/pcs-bench hash-eval run --scheme akita,akita-offload,akita-fp64,akita-fp64-offload,akita-fp128,akita-fp128-offload --payload 27,29,31,33,35 --threads 1,8 --runs 10 --warmups 1 --seed-mode vary --out results/hash-x86_64
+harness_revision=869d11fc4224699b2b4aaee6d73552aa65c0c2c6+dirty.992d102d7f1d
+timestamp_utc=2026-10-04T01:28:16Z
+run_command=target/release/pcs-bench hash-eval run --scheme akita,akita-offload,akita-fp64,akita-fp64-offload,akita-fp128,akita-fp128-offload --payload 27,29,31,33,35 --threads 1,8 --runs 10 --warmups 1 --seed-mode vary --out run-akita-hash
+rustc_version=rustc 1.95.0 (59807616e 2026-04-14)
+binary: rustc
+commit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860
+commit-date: 2026-04-14
+host: x86_64-unknown-linux-gnu
+release: 1.95.0
+LLVM version: 22.1.2
+target=Linux x86_64
+cpu_model=AMD Ryzen 9 9950X 16-Core Processor
+cpu_scaling_driver=amd-pstate-epp
+cpu_governor=powersave
+cpu_energy_preference=balance_performance
+machine_id_hash=e99e4755064c91d7
+rustflags=-C target-cpu=native
+avx512=true
+isa_notes=AVX-512F advertised; native-target code generation requested
+logical_cpus=32
+memory_bytes=200061865984
+memory_limit_bytes=180055679385
+seed_mode=vary
+akita_revision=12d486b0bca2814956d480aa121130e2702f8612
+akita_fp128_revision=12d486b0bca2814956d480aa121130e2702f8612
+akita_fp128_offload_revision=12d486b0bca2814956d480aa121130e2702f8612
+akita_fp64_revision=12d486b0bca2814956d480aa121130e2702f8612
+akita_fp64_offload_revision=12d486b0bca2814956d480aa121130e2702f8612
+akita_offload_revision=12d486b0bca2814956d480aa121130e2702f8612
 schemes=akita,akita_fp128,akita_fp128_offload,akita_fp64,akita_fp64_offload,akita_offload
 records=660
+
+[cohort 2]
+harness_revision=12e0ba6ba8dfa8e79de60e04e45677ec509844d4+dirty.e26e3e7706a7
+timestamp_utc=2026-10-03T23:09:31Z
+run_command=target/release/pcs-bench hash-eval run --scheme binius64,flock,worldfnd,basefold --payload 27,29,31,33,35 --threads 1,8 --runs 10 --warmups 1 --seed-mode vary --out run-hash
+rustc_version=rustc 1.95.0 (59807616e 2026-04-14)
+binary: rustc
+commit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860
+commit-date: 2026-04-14
+host: x86_64-unknown-linux-gnu
+release: 1.95.0
+LLVM version: 22.1.2
+target=Linux x86_64
+cpu_model=AMD Ryzen 9 9950X 16-Core Processor
+cpu_scaling_driver=amd-pstate-epp
+cpu_governor=powersave
+cpu_energy_preference=balance_performance
+machine_id_hash=e99e4755064c91d7
+rustflags=-C target-cpu=native
+avx512=true
+isa_notes=AVX-512F advertised; native-target code generation requested
+logical_cpus=32
+memory_bytes=200061865984
+memory_limit_bytes=180055679385
+seed_mode=vary
+basefold_revision=edc07b68c92c17e4fc8658c39a2ef8d9ea5d95dc
+binius64_revision=6a179536d90fcc76eeca0cee4e059f5e17efb459
+flock_ligerito_revision=b684b1258e4b1f202bec24afd660ace851b09e5e
+whir_provekit_revision=c03a4a512bd904562a22e14bc7b3064392448b99
+schemes=basefold,binius64,flock_ligerito,whir_provekit
+records=396
+
+[cohort 3]
+harness_revision=b42afcf4c0bffdf00e219a75612704b449c19660+dirty.f3d2220c77d7
+timestamp_utc=2026-10-04T03:33:17Z
+run_command=target/release/pcs-bench hash-eval run --scheme plonky3-fri,plonky3-stir,whir --payload 33,35 --threads 1,8 --runs 10 --warmups 1 --seed-mode vary --out run-hash-p3-33-35
+rustc_version=rustc 1.95.0 (59807616e 2026-04-14)
+binary: rustc
+commit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860
+commit-date: 2026-04-14
+host: x86_64-unknown-linux-gnu
+release: 1.95.0
+LLVM version: 22.1.2
+target=Linux x86_64
+cpu_model=AMD Ryzen 9 9950X 16-Core Processor
+cpu_scaling_driver=amd-pstate-epp
+cpu_governor=powersave
+cpu_energy_preference=balance_performance
+machine_id_hash=e99e4755064c91d7
+rustflags=-C target-cpu=native
+avx512=true
+isa_notes=AVX-512F advertised; native-target code generation requested
+logical_cpus=32
+memory_bytes=200061865984
+memory_limit_bytes=180055679385
+seed_mode=vary
+plonky3_fri_revision=3acc8b70e68d6c2afc03930700c26540bd47458d
+plonky3_stir_revision=3acc8b70e68d6c2afc03930700c26540bd47458d
+whir_revision=3acc8b70e68d6c2afc03930700c26540bd47458d
+schemes=plonky3_fri,plonky3_stir,whir
+records=132
