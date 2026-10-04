@@ -60,9 +60,19 @@ profile whenever one exists. The five repaired profiles were remeasured on
   length \(2^{n+3}\). Payload \(2^{33}\) (\(\log_2 N=27\)) and \(2^{35}\)
   (\(\log_2 N=29\)) OOM under the 90% RAM cap.
 - **Plonky3 FRI:** univariate KoalaBear with the pinned upstream
-  `FriParameters::new_benchmark` profile: rate \(1/2\), 100 queries, 16-bit
-  query-phase grind, binary folding, and Poseidon2. Its pinned random-words
-  estimate is approximately 113.744 bits. KoalaBear
+  `FriParameters::new_benchmark_high_arity` profile (rate \(1/2\), folding
+  up to 8-to-1, 16-bit query-phase grind, 10-bit batching grind, Poseidon2)
+  and 169 queries instead of the preset's 100. The preset's 100 queries reach
+  100 bits only under a conjecture; 169 is the smallest count for which the
+  pinned `p3-security` calculator proves 100 bits in the Johnson regime over
+  the quintic challenge field: the minimum of its low-degree-test bound, its
+  out-of-domain quotient bound at the squared list size, the column-batching
+  proximity gap for packed rows, and the digest collision bound. The worker
+  recomputes that bound for every run and fails below 100 bits. Measured at
+  \(\log_2 N\) 22 and 26, folding up to 8 or 16 was about 30% faster to
+  prove than binary folding and gave a proof about 40% smaller; 8 and 16 tied
+  on time and 8 has the smaller proof. Rate \(1/4\) with 85 queries halves
+  the proof but is twice as slow at \(\log_2 N = 22\). KoalaBear
   two-adicity 24: a rate-\(1/2\) univariate of \(\log_2 N>23\) is packed
   into height \(2^{23}\) and width \(2^{n-23}\) (footnote).
 - **Plonky3 STIR:** same pin and packing as FRI, using the upstream PCS

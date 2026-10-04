@@ -108,21 +108,19 @@ const BASEFOLD_NATIVE_PARAM: &str = "sp1-core-basefold-udr-100";
 /// Plonky3 FRI/STIR log-inverse rate (`rho = 1/2`).
 pub const PLONKY3_UNI_LOG_BLOWUP: u32 = 1;
 
-/// Plonky3 FRI queries in the pinned upstream `FriParameters::new_benchmark` preset.
-pub const PLONKY3_FRI_QUERIES: usize = 100;
+/// Plonky3 FRI queries: the smallest count at which the pinned `p3-security`
+/// calculator proves 100 bits in the Johnson regime for the upstream
+/// `FriParameters::new_benchmark_high_arity` preset (which ships 100 queries)
+/// over the KoalaBear quintic challenge field. The worker recomputes the bound
+/// and refuses to run below the target.
+pub const PLONKY3_FRI_QUERIES: usize = 169;
 
 /// Plonky3 FRI query-phase grinding in the pinned upstream benchmark preset.
 pub const PLONKY3_FRI_POW_BITS: usize = 16;
 
-/// Random-words estimate for the pinned Plonky3 FRI benchmark preset over the
-/// 155-bit KoalaBear quintic challenge field.
-///
-/// This is `100 * -log2(rho + eta) + 16`, where `rho = 1/2` and
-/// `eta = log2(e / rho) * rho / 155`.
-const PLONKY3_FRI_RANDOM_WORDS_BITS: f64 = 113.744_139_402_344_4;
-
-/// Canonical result identity for the pinned upstream Plonky3 FRI benchmark preset.
-const PLONKY3_FRI_NATIVE_PARAM: &str = "plonky3-fri-new-benchmark-r1-f2-q100-qp16-rw113744";
+/// Canonical result identity for the Plonky3 FRI profile: upstream high-arity
+/// benchmark preset with the proven Johnson-regime query count.
+const PLONKY3_FRI_NATIVE_PARAM: &str = "plonky3-fri-high-arity-r1-f8-q169-qp16-bp10-johnson100";
 
 /// Canonical result identity for the fold-4 Plonky3 STIR benchmark profile,
 /// including its 16-bit opening-batching grind.
@@ -368,8 +366,9 @@ impl HashSchemeId {
     pub const fn security_bits(self) -> u32 {
         match self {
             Self::Binius64 => BINIUS64_SECURITY_BITS,
-            Self::Plonky3Fri => PLONKY3_FRI_RANDOM_WORDS_BITS as u32,
-            Self::Plonky2Fri | Self::Plonky3Stir | Self::Basefold => HASH_SECURITY_BITS_100,
+            Self::Plonky2Fri | Self::Plonky3Fri | Self::Plonky3Stir | Self::Basefold => {
+                HASH_SECURITY_BITS_100
+            }
             Self::WhirProvekit => WORLDFND_SECURITY_BITS,
             Self::Akita
             | Self::AkitaOffload
@@ -393,7 +392,7 @@ impl HashSchemeId {
             | Self::AkitaFp128
             | Self::AkitaFp128Offload => "128-bit Module-SIS/ROM",
             Self::Plonky2Fri => "approx. 100-bit conjectural",
-            Self::Plonky3Fri => "113.744-bit random-words conjectural",
+            Self::Plonky3Fri => "100-bit Johnson",
             Self::Plonky3Stir => "100-bit capacity",
             Self::Whir | Self::FlockLigerito | Self::WhirProvekit => "128-bit RBR",
             Self::Binius64 => "96-bit UDR query",
@@ -686,9 +685,8 @@ mod tests {
         BASEFOLD_NATIVE_PARAM, BINIUS64_NATIVE_PARAM, BINIUS64_SECURITY_BITS, HASH_CELL_COUNT,
         HASH_SCHEME_COUNT, HASH_SECURITY_BITS, HASH_SECURITY_BITS_100, HASH_THREADS, KOALA_BEAR,
         KOALA_BEAR_TWO_ADICITY, PLONKY3_FRI_NATIVE_PARAM, PLONKY3_FRI_POW_BITS,
-        PLONKY3_FRI_QUERIES, PLONKY3_FRI_RANDOM_WORDS_BITS, PLONKY3_STIR_NATIVE_PARAM,
-        PLONKY3_UNI_LOG_BLOWUP, WORLDFND_SECURITY_BITS, WORLDFND_WHIR_FOLD,
-        WORLDFND_WHIR_LOG_INV_RATE,
+        PLONKY3_FRI_QUERIES, PLONKY3_STIR_NATIVE_PARAM, PLONKY3_UNI_LOG_BLOWUP,
+        WORLDFND_SECURITY_BITS, WORLDFND_WHIR_FOLD, WORLDFND_WHIR_LOG_INV_RATE,
     };
     use crate::lattice::{log2_n_for_32bit_payload, PAYLOAD_LOG2};
 
@@ -707,10 +705,10 @@ mod tests {
         assert_eq!(BASEFOLD_FRI_QUERIES, 124);
         assert_eq!(BASEFOLD_FRI_POW_BITS, 16);
         assert_eq!(BASEFOLD_LOG_STACKING_HEIGHT, 21);
-        assert_eq!(PLONKY3_FRI_QUERIES, 100);
+        assert_eq!(PLONKY3_FRI_QUERIES, 169);
         assert_eq!(PLONKY3_FRI_POW_BITS, 16);
-        assert!((PLONKY3_FRI_RANDOM_WORDS_BITS - 113.744).abs() < 0.001);
-        assert_eq!(HashSchemeId::Plonky3Fri.security_bits(), 113);
+        assert_eq!(HashSchemeId::Plonky3Fri.security_bits(), 100);
+        assert_eq!(HashSchemeId::Plonky3Fri.security_label(), "100-bit Johnson");
         assert_eq!(WORLDFND_SECURITY_BITS, 128);
         assert_eq!(WORLDFND_WHIR_LOG_INV_RATE, 1);
         assert_eq!(WORLDFND_WHIR_FOLD, 4);
@@ -765,6 +763,7 @@ mod tests {
         assert_eq!(fri.native_param, PLONKY3_FRI_NATIVE_PARAM);
         assert_eq!(stir.native_param, PLONKY3_STIR_NATIVE_PARAM);
         assert_ne!(PLONKY3_FRI_NATIVE_PARAM, "plonky3-fri-100");
+        assert!(PLONKY3_FRI_NATIVE_PARAM.ends_with("johnson100"));
         assert_ne!(PLONKY3_STIR_NATIVE_PARAM, "plonky3-stir-100");
     }
 

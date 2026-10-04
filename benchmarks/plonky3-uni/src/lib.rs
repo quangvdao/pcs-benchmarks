@@ -10,12 +10,15 @@ use p3_fri::{FriParameters, TwoAdicFriPcs};
 use p3_koala_bear::{KoalaBear, Poseidon2KoalaBear};
 use p3_matrix::dense::RowMajorMatrix;
 use p3_merkle_tree::MerkleTreeMmcs;
-use p3_stir::{StirConfig, StirParameters, TwoAdicStirPcs};
+use p3_security::deep::deep_ali_error;
+use p3_security::fri::{ldr_candidates, proven_error_udr};
+use p3_security::proximity::list_size_ldr_m;
+use p3_security::{InstanceShape, StarkAirParams};
+use p3_stir::{SecurityAssumption, StirConfig, StirParameters, TwoAdicStirPcs};
 use p3_symmetric::{PaddingFreeSponge, TruncatedPermutation};
-use p3_whir::parameters::SecurityAssumption;
 use pcs_bench_core::{
     plonky3_log_height, plonky3_log_width, RunStatus, WorkerOutput, HASH_SECURITY_BITS_100,
-    PLONKY3_UNI_LOG_BLOWUP,
+    PLONKY3_FRI_QUERIES, PLONKY3_UNI_LOG_BLOWUP,
 };
 use rand::rngs::SmallRng;
 use rand::SeedableRng;
@@ -38,7 +41,11 @@ type Challenger = DuplexChallenger<F, Poseidon16, 16, 8>;
 type FriPcsTy = TwoAdicFriPcs<F, Dft, ValMmcs, ChallengeMmcs>;
 type StirPcsTy = TwoAdicStirPcs<F, Dft, ValMmcs, ChallengeMmcs, EF, Challenger>;
 
-const FRI_PRESET: &str = "preset=p3-fri-new-benchmark,rate=1/2,fold=2,queries=100,query_pow_bits=16,security_model=random-words-conjecture,random_words_bits=113.744";
+/// `floor(log2 |E|)` for the KoalaBear quintic challenge field (`|E| ~ 2^154.88`).
+const CHALLENGE_FIELD_BITS: usize = 154;
+/// Collision resistance of the 8-element KoalaBear Merkle digest (`~2^247.8` values).
+const DIGEST_COLLISION_BITS: usize = 123;
+const FRI_PRESET: &str = "preset=p3-fri-new-benchmark-high-arity,rate=1/2,max_fold=8,queries=169,query_pow_bits=16,batch_pow_bits=10,security_model=proven-johnson-or-unique-decoding,target_bits=100";
 const STIR_PRESET: &str = "preset=p3-stir-pcs-benchmark,rate=1/2,initial_fold=4,later_fold=4,security=100-capacity,max_phase_pow_bits=20,batch_pow_bits=16,security_model=capacity-list-decoding+mutual-correlated-agreement";
 const STIR_LOG_FOLDING_FACTOR: usize = 2;
 const STIR_MAX_POW_BITS: usize = 20;
@@ -104,7 +111,21 @@ fn timed_univariate(kind: UniKind, log2_n: u32) -> Result<WorkerOutput, String> 
 
     match kind {
         UniKind::Fri => {
-            let fri_params = upstream_fri_parameters(challenge_mmcs);
+            let fri_params = fri_parameters(challenge_mmcs);
+            let proven = fri_proven_bits(&fri_params, log_height, width);
+            if proven.bits < f64::from(HASH_SECURITY_BITS_100) {
+                return Err(format!(
+                    "FRI profile proves only {:.2} bits at height {log_height}, width {width}",
+                    proven.bits
+                ));
+            }
+            let preset = format!(
+                "{FRI_PRESET},proven_bits={:.2},regime={}",
+                proven.bits,
+                proven
+                    .johnson_m
+                    .map_or_else(|| "unique-decoding".to_owned(), |m| format!("johnson-m{m}"))
+            );
             let dft = Dft::new(1 << (log_height + log_blowup));
             let pcs = FriPcsTy::new(dft, val_mmcs, fri_params);
             let setup_ns = elapsed_ns(setup_start);
@@ -120,7 +141,7 @@ fn timed_univariate(kind: UniKind, log2_n: u32) -> Result<WorkerOutput, String> 
                 setup_ns,
                 log2_n,
                 packed,
-                FRI_PRESET,
+                &preset,
                 |ch, commit| ch.observe(commit.clone()),
             )
         }
@@ -154,8 +175,99 @@ fn timed_univariate(kind: UniKind, log2_n: u32) -> Result<WorkerOutput, String> 
     }
 }
 
-fn upstream_fri_parameters<M>(mmcs: M) -> FriParameters<M> {
-    FriParameters::new_benchmark(mmcs)
+/// Upstream `new_benchmark_high_arity` with the query count raised from 100
+/// to the smallest value that proves 100 bits (see `fri_proven_bits`).
+fn fri_parameters<M>(mmcs: M) -> FriParameters<M> {
+    let mut params = FriParameters::new_benchmark_high_arity(mmcs);
+    params.num_queries = PLONKY3_FRI_QUERIES;
+    params
+}
+
+/// Proven soundness of one FRI opening, in bits, with the regime that attains it.
+///
+/// The bound is the pinned `p3_security` calculator's, not a formula of this
+/// crate: the better of unique decoding and the Johnson regime over the
+/// multiplicities the calculator proposes. Each regime is the minimum of
+///
+/// * the low-degree-test term (commit phase plus `num_queries` queries and the
+///   query grind, `p3_security::fri`),
+/// * the out-of-domain quotient term at the squared Johnson list size
+///   (`p3_security::deep`),
+/// * for a matrix of two or more columns, the column-batching proximity gap
+///   plus the batching grind, and
+/// * the collision resistance of the Merkle digest.
+///
+/// No term uses a conjecture on proximity gaps or list decoding beyond the
+/// Johnson radius. The Johnson proximity-gap and correlated-agreement
+/// constants are the ones `p3_security` implements at the pinned revision.
+struct FriProven {
+    bits: f64,
+    /// `None` for unique decoding, `Some(m)` for the Johnson regime at multiplicity `m`.
+    johnson_m: Option<usize>,
+}
+
+fn fri_proven_bits<M>(params: &FriParameters<M>, log_height: usize, width: usize) -> FriProven {
+    let regime = params.security_regime();
+    let batch_pow_bits = params.grinding_sites().batch_combination as f64;
+    let air = StarkAirParams {
+        num_constraints: 0,
+        max_constraint_degree: 1,
+        num_quotient_chunks: 1,
+        max_combo: 1,
+    };
+    let shape = InstanceShape {
+        log_trace_length: log_height,
+        modulus_bits: CHALLENGE_FIELD_BITS,
+        collision_resistance: DIGEST_COLLISION_BITS,
+        num_batched_functions: width,
+    };
+    let collision = DIGEST_COLLISION_BITS as f64;
+
+    let mut udr = proven_error_udr(&regime, &air, &shape)
+        .bits()
+        .min(deep_ali_error(&air, &shape, 1.0).bits())
+        .min(collision);
+    if width >= 2 {
+        udr = udr.min(
+            SecurityAssumption::UniqueDecoding.prox_gaps_error(
+                log_height,
+                regime.log_blowup,
+                CHALLENGE_FIELD_BITS,
+                width,
+            ) + batch_pow_bits,
+        );
+    }
+    let mut best = FriProven {
+        bits: udr,
+        johnson_m: None,
+    };
+    for (m, ldt) in ldr_candidates(&regime, &air, &shape) {
+        let list_size = list_size_ldr_m(regime.log_blowup, m);
+        // Out-of-domain term charged at the squared list size, as in
+        // eprint 2024/1553 Theorem 2, rather than the linear soundcalc form.
+        let mut bits = ldt
+            .bits()
+            .min(deep_ali_error(&air, &shape, list_size * list_size).bits())
+            .min(collision);
+        if width >= 2 {
+            bits = bits.min(
+                SecurityAssumption::prox_gaps_error_jb_at_m(
+                    log_height,
+                    regime.log_blowup,
+                    CHALLENGE_FIELD_BITS,
+                    width,
+                    m,
+                ) + batch_pow_bits,
+            );
+        }
+        if bits > best.bits {
+            best = FriProven {
+                bits,
+                johnson_m: Some(m),
+            };
+        }
+    }
+    best
 }
 
 fn upstream_stir_parameters<M>(mmcs: M) -> StirParameters<M> {
@@ -357,25 +469,59 @@ fn peak_rss_bytes() -> Option<u64> {
 #[cfg(test)]
 mod tests {
     use super::{
-        upstream_fri_parameters, upstream_stir_parameters, FRI_PRESET, STIR_BATCH_POW_BITS,
+        fri_parameters, fri_proven_bits, upstream_stir_parameters, FRI_PRESET, STIR_BATCH_POW_BITS,
         STIR_LOG_FOLDING_FACTOR, STIR_MAX_POW_BITS, STIR_PRESET,
     };
+    use p3_fri::FriParameters;
     use p3_stir::SecurityAssumption;
     use pcs_bench_core::{
-        HASH_SECURITY_BITS_100, PLONKY3_FRI_POW_BITS, PLONKY3_FRI_QUERIES, PLONKY3_UNI_LOG_BLOWUP,
+        plonky3_log_height, plonky3_log_width, HASH_SECURITY_BITS_100, PLONKY3_FRI_POW_BITS,
+        PLONKY3_FRI_QUERIES, PLONKY3_UNI_LOG_BLOWUP,
     };
 
     #[test]
-    fn fri_parameters_match_pinned_upstream_benchmark_preset() {
-        let params = upstream_fri_parameters(());
+    fn fri_parameters_are_upstream_high_arity_preset_with_proven_query_count() {
+        let params = fri_parameters(());
+        let upstream = FriParameters::new_benchmark_high_arity(());
         assert_eq!(params.log_blowup, PLONKY3_UNI_LOG_BLOWUP as usize);
-        assert_eq!(params.log_final_poly_len, 0);
-        assert_eq!(params.max_log_arity, 1);
+        assert_eq!(params.log_blowup, upstream.log_blowup);
+        assert_eq!(params.log_final_poly_len, upstream.log_final_poly_len);
+        assert_eq!(params.max_log_arity, 3);
+        assert_eq!(params.max_log_arity, upstream.max_log_arity);
         assert_eq!(params.num_queries, PLONKY3_FRI_QUERIES);
-        assert_eq!(params.batch_proof_of_work_bits, 0);
+        assert_eq!(
+            params.batch_proof_of_work_bits,
+            upstream.batch_proof_of_work_bits
+        );
         assert_eq!(params.commit_proof_of_work_bits, 0);
         assert_eq!(params.query_proof_of_work_bits, PLONKY3_FRI_POW_BITS);
-        assert!(FRI_PRESET.contains("random_words_bits=113.744"));
+        assert!(FRI_PRESET.contains(&format!("queries={PLONKY3_FRI_QUERIES},")));
+        assert!(FRI_PRESET.contains("batch_pow_bits=10"));
+        assert!(!FRI_PRESET.contains("conjecture"));
+    }
+
+    #[test]
+    fn fri_query_count_is_the_smallest_that_proves_100_bits_on_every_matrix_shape() {
+        let target = f64::from(HASH_SECURITY_BITS_100);
+        let mut one_fewer_fails = false;
+        for log2_n in 10..=30 {
+            let log_height = plonky3_log_height(log2_n) as usize;
+            let width = 1usize << plonky3_log_width(log2_n);
+            let params = fri_parameters(());
+            let proven = fri_proven_bits(&params, log_height, width);
+            assert!(proven.bits >= target, "log2_n={log2_n}: {}", proven.bits);
+            assert!(proven.johnson_m.is_some(), "log2_n={log2_n}");
+            let mut fewer = fri_parameters(());
+            fewer.num_queries -= 1;
+            one_fewer_fails |= fri_proven_bits(&fewer, log_height, width).bits < target;
+        }
+        assert!(one_fewer_fails);
+    }
+
+    #[test]
+    fn upstream_fri_query_count_does_not_prove_100_bits() {
+        let upstream = FriParameters::new_benchmark_high_arity(());
+        assert!(fri_proven_bits(&upstream, 22, 1).bits < f64::from(HASH_SECURITY_BITS_100));
     }
 
     #[test]

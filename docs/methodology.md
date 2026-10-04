@@ -129,8 +129,8 @@ rules that apply only to that table:
    The worker falls back to unique decoding if the Johnson bound cannot close
    128 bits, and generated tables footnote unique-decoding WHIR rows. The
    capacity bound is never used. Plonky2 uses its approximately 100-bit standard-recursion FRI
-   tuple. Plonky3 FRI uses the pinned upstream benchmark tuple, approximately
-   113.744 bits under the pinned random-words estimate; STIR uses the upstream
+   tuple. Plonky3 FRI uses the pinned upstream high-arity benchmark tuple with 169
+   queries, the smallest count that proves 100 bits in the Johnson regime; STIR uses the upstream
    fold-4 PCS benchmark schedule with its 16-bit opening-batching grind and
    validates an aggregate 100-bit capacity-regime target. Binius64 uses its product-default 96-bit
    unique-decoding query target. Flock uses its default Fast profile at
