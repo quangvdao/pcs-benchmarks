@@ -168,7 +168,7 @@ fn markdown_security_table() -> &'static str {
 | Scheme | Accepted profile | Security accounting |\n\
 | --- | --- | --- |\n\
 | Akita | Planner-selected direct/offloaded schedules at each native prime | 128-bit Module-SIS and 128-bit classical-ROM transcript target |\n\
-| Plonky2 FRI | Quartic challenge field, rate 1/2, 172 queries, 16 work bits | 100-bit proven Johnson-regime bound |\n\
+| Plonky2 FRI | Quartic challenge field, rate 1/2, 169 queries, 16 work bits | 100-bit proven Johnson-regime bound |\n\
 | Plonky3 FRI | Upstream new_benchmark_high_arity with 169 queries: rate 1/2, fold up to 8, 16 query-PoW bits, 10-bit batching grind | 100-bit proven Johnson-regime bound |\n\
 | Plonky3 STIR | Upstream PCS benchmark with the Johnson bound: rate 1/2, fold 16 throughout, at most 16 work bits per phase, 16-bit batching grind | 100-bit aggregate target, proven Johnson regime |\n\
 | Plonky3 WHIR | Upstream PCS benchmark profile with the Johnson bound: octic extension, rate 1/2, fold 4, 12 work bits | 128-bit round-by-round target, proven Johnson regime |\n\
@@ -187,7 +187,7 @@ fn latex_security_table() -> &'static str {
 Scheme & Accepted profile & Security accounting \\\\\n\
 \\midrule\n\
 Akita & Planner-selected schedules at each native prime & 128-bit Module-SIS and classical-ROM target \\\\\n\
-Plonky2 FRI & Quartic challenge field, rate $1/2$, 172 queries, 16 work bits & 100-bit proven Johnson \\\\\n\
+Plonky2 FRI & Quartic challenge field, rate $1/2$, 169 queries, 16 work bits & 100-bit proven Johnson \\\\\n\
 Plonky3 FRI & Rate $1/2$, fold up to 8, 169 queries, 16 query-PoW bits, 10-bit batching grind & 100-bit proven Johnson \\\\\n\
 Plonky3 STIR & Rate $1/2$, fold 16 throughout, Johnson bound, at most 16 work bits per phase, 16-bit batching grind & 100-bit aggregate, proven Johnson \\\\\n\
 Plonky3 WHIR & Octic extension, rate $1/2$, fold 4, Johnson bound, 12 work bits & 128-bit RBR, proven Johnson regime \\\\\n\

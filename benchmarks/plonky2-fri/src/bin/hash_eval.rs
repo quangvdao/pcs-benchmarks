@@ -52,9 +52,10 @@ const D: usize = 4;
 /// `log2` of the challenge-field size, rounded down to two decimals.
 const CHALLENGE_FIELD_BITS: f64 = 255.99;
 /// Johnson-regime multiplicity parameter `m` of BCIKS20 Theorem 8.3. It is
-/// fixed rather than optimised so that the commit-phase term keeps more than
-/// 40 bits of margin at every benchmarked size.
-const JOHNSON_M: f64 = 64.0;
+/// fixed rather than optimised: at 256 the commit-phase term keeps more than
+/// 30 bits of margin at every benchmarked size, and no larger value lowers
+/// the query count.
+const JOHNSON_M: f64 = 256.0;
 
 fn main() -> ExitCode {
     let threads = parse_u32_flag("--threads").unwrap_or(1).max(1);
@@ -410,6 +411,6 @@ mod tests {
     #[test]
     fn commit_phase_terms_keep_a_wide_margin() {
         // With unbounded queries only the field-size terms remain.
-        assert!(bits(30, 4096) > 140.0);
+        assert!(bits(30, 4096) > 130.0);
     }
 }

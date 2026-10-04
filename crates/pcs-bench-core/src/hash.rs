@@ -137,14 +137,14 @@ pub const PLONKY2_FRI_RATE_BITS: usize = 1;
 /// proven Johnson-regime FRI bound (BCIKS20, Theorem 8.3) at rate 1/2 with
 /// 16 grinding bits over the quartic Goldilocks challenge field. The worker
 /// recomputes the bound and refuses to run below the target.
-pub const PLONKY2_FRI_QUERIES: usize = 172;
+pub const PLONKY2_FRI_QUERIES: usize = 169;
 
 /// Plonky2 FRI grinding bits.
 pub const PLONKY2_FRI_POW_BITS: usize = 16;
 
 /// Canonical result identity for the Plonky2 FRI profile: quartic challenge
 /// field, rate 1/2, proven Johnson-regime query count.
-const PLONKY2_FRI_NATIVE_PARAM: &str = "plonky2-fri-ext4-r1-f16-q172-p16-johnson100";
+const PLONKY2_FRI_NATIVE_PARAM: &str = "plonky2-fri-ext4-r1-f16-q169-p16-johnson100";
 
 /// Plonky2 Merkle cap height (standard recursion config).
 pub const PLONKY2_CAP_HEIGHT: usize = 4;
@@ -819,7 +819,7 @@ mod tests {
             assert_eq!(p2.log2_n, log2_n_for_payload_bits(payload, 64));
             assert_eq!(
                 p2.native_param,
-                "plonky2-fri-ext4-r1-f16-q172-p16-johnson100"
+                "plonky2-fri-ext4-r1-f16-q169-p16-johnson100"
             );
             assert_eq!(p2.scheme.security_label(), "100-bit Johnson");
             let flock = matrix

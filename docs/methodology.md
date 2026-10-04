@@ -128,7 +128,7 @@ rules that apply only to that table:
    current pin that holds for every size in this matrix with a 12-bit budget.
    The worker falls back to unique decoding if the Johnson bound cannot close
    128 bits, and generated tables footnote unique-decoding WHIR rows. The
-   capacity bound is never used. Plonky2 FRI runs at rate 1/2 with 172 queries
+   capacity bound is never used. Plonky2 FRI runs at rate 1/2 with 169 queries
    over a quartic challenge field, the smallest query count that proves 100
    bits in the Johnson regime; its quadratic standard-recursion tuple cannot
    reach 100 proven bits at these sizes. Plonky3 FRI uses the pinned upstream high-arity benchmark tuple with 169

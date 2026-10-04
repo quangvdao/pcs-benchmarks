@@ -78,7 +78,7 @@ about the interactive oracle proof, not about the Merkle commitment.
   | \(2^{33}\) | offload | offload | offload |
   | \(2^{35}\) | offload | offload | offload |
 - **Plonky2 FRI:** `elliottech/plonky2`, univariate Goldilocks, Poseidon2,
-  16-to-1 folding, with a quartic challenge field, rate \(1/2\), 172
+  16-to-1 folding, with a quartic challenge field, rate \(1/2\), 169
   queries, and 16-bit PoW. This is not a shipped Plonky2 configuration. The
   standard recursion tuple (quadratic challenge field, rate \(1/8\), 28
   queries) reaches 100 bits only under the conjectured FRI bound, and no
@@ -88,10 +88,10 @@ about the interactive oracle proof, not about the Merkle commitment.
   matrix. The worker therefore instantiates Plonky2's own generic
   `QuarticExtension<GoldilocksField>` as the challenge field and takes its
   query count from the proven Johnson-regime FRI bound of BCIKS20
-  (ePrint 2020/654, Theorem 8.3) with proximity parameter \(m = 64\) and
+  (ePrint 2020/654, Theorem 8.3) with proximity parameter \(m = 256\) and
   the DEEP quotient charged at the squared Johnson list size; grinding
   multiplies the query term by \(2^{-16}\). The algebraic terms stay above
-  150 bits up to \(\log_2 N = 30\), and 172 is the smallest query count at
+  135 bits up to \(\log_2 N = 30\), and 169 is the smallest query count at
   100 bits (rate \(1/4\) needs 85, rate \(1/8\) needs 57). The bound is a
   hand derivation in the worker, which recomputes it for every run and fails
   below 100 bits; the pinned library ships no calculator for it. Measured at
