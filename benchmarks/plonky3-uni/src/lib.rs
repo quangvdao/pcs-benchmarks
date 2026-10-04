@@ -46,11 +46,14 @@ const CHALLENGE_FIELD_BITS: usize = 154;
 /// Collision resistance of the 8-element KoalaBear Merkle digest (`~2^247.8` values).
 const DIGEST_COLLISION_BITS: usize = 123;
 const FRI_PRESET: &str = "preset=p3-fri-new-benchmark-high-arity,rate=1/2,max_fold=8,queries=169,query_pow_bits=16,batch_pow_bits=10,security_model=proven-johnson-or-unique-decoding,target_bits=100";
-const STIR_PRESET: &str = "preset=p3-stir-pcs-benchmark,rate=1/2,initial_fold=4,later_fold=4,security=100-capacity,max_phase_pow_bits=20,batch_pow_bits=16,security_model=capacity-list-decoding+mutual-correlated-agreement";
-const STIR_LOG_FOLDING_FACTOR: usize = 2;
-const STIR_MAX_POW_BITS: usize = 20;
+const STIR_PRESET: &str = "preset=p3-stir-pcs-benchmark,rate=1/2,initial_fold=16,later_fold=16,security=100-johnson,max_phase_pow_bits=16,batch_pow_bits=16,security_model=proven-johnson-list-decoding+mutual-correlated-agreement";
+const STIR_LOG_FOLDING_FACTOR: usize = 4;
+const STIR_MAX_POW_BITS: usize = 16;
 /// Opening-batching grind of the upstream `stir_pcs` benchmark.
 const STIR_BATCH_POW_BITS: usize = 16;
+/// Largest security level requested from `p3_stir` while looking for a
+/// schedule whose degree-correction terms also clear the 100-bit target.
+const STIR_MAX_LIBRARY_SECURITY_BITS: usize = 112;
 
 /// Which univariate protocol to run.
 #[derive(Clone, Copy)]
@@ -146,12 +149,12 @@ fn timed_univariate(kind: UniKind, log2_n: u32) -> Result<WorkerOutput, String> 
             )
         }
         UniKind::Stir => {
-            let stir_params = upstream_stir_parameters(challenge_mmcs);
-            StirConfig::<F, EF, ChallengeMmcs, Challenger>::try_new(
-                log_height,
-                stir_params.clone(),
-            )
-            .map_err(|error| error.to_string())?;
+            let (stir_params, slack) = select_stir_parameters(log_height, challenge_mmcs)?;
+            let preset = format!(
+                "{STIR_PRESET},library_security_level={},degree_correction_slack_bits={}",
+                stir_params.security_level,
+                slack.map_or_else(|| "none".to_owned(), |bits| format!("{bits:.2}"))
+            );
             let dft = Dft::new(1 << (log_height + log_blowup));
             let pcs = StirPcsTy::new(dft, val_mmcs, stir_params)
                 .with_batch_proof_of_work_bits(STIR_BATCH_POW_BITS);
@@ -168,7 +171,7 @@ fn timed_univariate(kind: UniKind, log2_n: u32) -> Result<WorkerOutput, String> 
                 setup_ns,
                 log2_n,
                 packed,
-                STIR_PRESET,
+                &preset,
                 |ch, commit| commit.iter().for_each(|root| ch.observe(root.clone())),
             )
         }
@@ -270,16 +273,110 @@ fn fri_proven_bits<M>(params: &FriParameters<M>, log_height: usize, width: usize
     best
 }
 
-fn upstream_stir_parameters<M>(mmcs: M) -> StirParameters<M> {
+fn stir_parameters<M>(mmcs: M, security_level: usize) -> StirParameters<M> {
     StirParameters {
         log_blowup: PLONKY3_UNI_LOG_BLOWUP as usize,
         log_folding_factor: STIR_LOG_FOLDING_FACTOR,
         log_starting_folding_factor: STIR_LOG_FOLDING_FACTOR,
-        soundness_type: SecurityAssumption::CapacityBound,
-        security_level: HASH_SECURITY_BITS_100 as usize,
+        soundness_type: SecurityAssumption::JohnsonBound,
+        security_level,
         max_pow_bits: STIR_MAX_POW_BITS,
         mmcs,
     }
+}
+
+/// Picks the smallest library security level, starting at the 100-bit target,
+/// whose Johnson-bound schedule also passes `stir_degree_correction_slack`.
+///
+/// Raising the level only strengthens the terms `p3_stir` already prices; the
+/// reported target stays 100 bits.
+fn select_stir_parameters(
+    log_height: usize,
+    mmcs: ChallengeMmcs,
+) -> Result<(StirParameters<ChallengeMmcs>, Option<f64>), String> {
+    let mut last_error = String::new();
+    for level in HASH_SECURITY_BITS_100 as usize..=STIR_MAX_LIBRARY_SECURITY_BITS {
+        let params = stir_parameters(mmcs.clone(), level);
+        let checked =
+            StirConfig::<F, EF, ChallengeMmcs, Challenger>::try_new(log_height, params.clone())
+                .map_err(|error| error.to_string())
+                .and_then(|config| stir_degree_correction_slack(&config));
+        match checked {
+            Ok(slack) => return Ok((params, slack)),
+            Err(error) => last_error = error,
+        }
+    }
+    Err(format!(
+        "STIR cannot prove 100 bits under the Johnson bound at height {log_height}: {last_error}"
+    ))
+}
+
+/// Smallest slack, in bits, of the degree-correction batching terms.
+///
+/// At the pinned revision `StirConfig` prices Lemma 5.4's
+/// `err*(d_{i+1}, rho_{i+1}, delta_{i+1}, t + s)` term only under the
+/// capacity bound. Under the Johnson bound it is left out, so it is checked
+/// here with the same proximity-gap function the library uses for folding.
+/// Round `i` batches `t + s` answers into stage `i + 1`'s code and only round
+/// `i`'s query grind protects that draw.
+///
+/// Each term must clear 100 bits plus `ceil(log2(6R + 5))`, which is at least
+/// the union-bound buffer `p3_stir` applies to the terms it prices and already
+/// counts one random-combination slot per round. The returned slack is the
+/// smallest margin over that target, or `None` when the schedule has no round.
+fn stir_degree_correction_slack(
+    config: &StirConfig<F, EF, ChallengeMmcs, Challenger>,
+) -> Result<Option<f64>, String> {
+    let rounds = config.round_configs();
+    if rounds.is_empty() {
+        return Ok(None);
+    }
+    // Same reserve as `p3_stir`'s private `field_bits`: floor(log2 |E|) - 1.
+    let field_bits = EF::bits() - 2;
+    let num_rounds = rounds.len();
+    let buffer = ceil_log2(6 * num_rounds + 5);
+    let target = (HASH_SECURITY_BITS_100 as usize + buffer) as f64;
+    let mut slack = f64::INFINITY;
+    for (index, round) in rounds.iter().enumerate() {
+        let (log_degree, log_inv_rate, eta) = match rounds.get(index + 1) {
+            Some(next) => (
+                next.log_degree,
+                next.log_domain_size - next.log_degree,
+                next.eta,
+            ),
+            None => {
+                let log_degree = round.log_degree - round.log_folding_factor;
+                (
+                    log_degree,
+                    round.log_domain_size - 1 - log_degree,
+                    config.final_eta(),
+                )
+            }
+        };
+        let functions = round.num_queries + round.num_ood_samples;
+        if functions < 2 {
+            continue;
+        }
+        let bits = SecurityAssumption::JohnsonBound.prox_gaps_error_at_log_eta(
+            log_degree,
+            log_inv_rate,
+            field_bits,
+            functions,
+            eta.log2(),
+        ) + round.pow_bits as f64;
+        slack = slack.min(bits - target);
+    }
+    if slack < 0.0 {
+        return Err(format!(
+            "STIR degree-correction term misses the proven target by {:.2} bits",
+            -slack
+        ));
+    }
+    Ok(Some(slack))
+}
+
+fn ceil_log2(value: usize) -> usize {
+    value.next_power_of_two().trailing_zeros() as usize
 }
 
 fn timed_pcs<P>(
@@ -469,8 +566,9 @@ fn peak_rss_bytes() -> Option<u64> {
 #[cfg(test)]
 mod tests {
     use super::{
-        fri_parameters, fri_proven_bits, upstream_stir_parameters, FRI_PRESET, STIR_BATCH_POW_BITS,
-        STIR_LOG_FOLDING_FACTOR, STIR_MAX_POW_BITS, STIR_PRESET,
+        fri_parameters, fri_proven_bits, select_stir_parameters, stir_parameters, ChallengeMmcs,
+        MerkleCompress, MerkleHash, Poseidon16, Poseidon24, ValMmcs, FRI_PRESET,
+        STIR_BATCH_POW_BITS, STIR_LOG_FOLDING_FACTOR, STIR_MAX_POW_BITS, STIR_PRESET,
     };
     use p3_fri::FriParameters;
     use p3_stir::SecurityAssumption;
@@ -478,6 +576,8 @@ mod tests {
         plonky3_log_height, plonky3_log_width, HASH_SECURITY_BITS_100, PLONKY3_FRI_POW_BITS,
         PLONKY3_FRI_QUERIES, PLONKY3_UNI_LOG_BLOWUP,
     };
+    use rand::rngs::SmallRng;
+    use rand::SeedableRng;
 
     #[test]
     fn fri_parameters_are_upstream_high_arity_preset_with_proven_query_count() {
@@ -525,17 +625,43 @@ mod tests {
     }
 
     #[test]
-    fn stir_parameters_match_upstream_pcs_benchmark_profile_with_fold_four() {
-        let params = upstream_stir_parameters(());
+    fn stir_parameters_use_the_johnson_bound_with_fold_sixteen() {
+        let params = stir_parameters((), HASH_SECURITY_BITS_100 as usize);
         assert_eq!(params.log_blowup, PLONKY3_UNI_LOG_BLOWUP as usize);
         assert_eq!(params.log_starting_folding_factor, STIR_LOG_FOLDING_FACTOR);
         assert_eq!(params.log_folding_factor, STIR_LOG_FOLDING_FACTOR);
-        assert_eq!(1 << params.log_folding_factor, 4);
-        assert_eq!(params.soundness_type, SecurityAssumption::CapacityBound);
+        assert_eq!(1 << params.log_folding_factor, 16);
+        assert_eq!(params.soundness_type, SecurityAssumption::JohnsonBound);
         assert_eq!(params.security_level, HASH_SECURITY_BITS_100 as usize);
         assert_eq!(params.max_pow_bits, STIR_MAX_POW_BITS);
-        assert!(STIR_PRESET.contains("initial_fold=4,later_fold=4"));
+        assert!(STIR_PRESET.contains("initial_fold=16,later_fold=16"));
+        assert!(STIR_PRESET.contains("security=100-johnson"));
+        assert!(!STIR_PRESET.contains("capacity"));
         assert_eq!(STIR_BATCH_POW_BITS, 16);
         assert!(STIR_PRESET.contains("batch_pow_bits=16"));
+    }
+
+    #[test]
+    fn stir_schedule_clears_the_degree_correction_terms_at_every_height() {
+        let mut perm_rng = SmallRng::seed_from_u64(1);
+        let poseidon16 = Poseidon16::new_from_rng_128(&mut perm_rng);
+        let poseidon24 = Poseidon24::new_from_rng_128(&mut perm_rng);
+        let val_mmcs = ValMmcs::new(
+            MerkleHash::new(poseidon24),
+            MerkleCompress::new(poseidon16),
+            0,
+        );
+        let mut raised = false;
+        for log2_n in 10..=30 {
+            let log_height = plonky3_log_height(log2_n) as usize;
+            let (params, slack) =
+                select_stir_parameters(log_height, ChallengeMmcs::new(val_mmcs.clone()))
+                    .unwrap_or_else(|error| panic!("log2_n={log2_n}: {error}"));
+            assert!(params.security_level >= HASH_SECURITY_BITS_100 as usize);
+            assert!(slack.is_none_or(|bits| bits >= 0.0));
+            raised |= params.security_level > HASH_SECURITY_BITS_100 as usize;
+        }
+        // The library's own 100-bit Johnson schedule leaves the term short.
+        assert!(raised);
     }
 }

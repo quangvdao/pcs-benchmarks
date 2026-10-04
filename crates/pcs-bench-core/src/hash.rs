@@ -122,9 +122,9 @@ pub const PLONKY3_FRI_POW_BITS: usize = 16;
 /// benchmark preset with the proven Johnson-regime query count.
 const PLONKY3_FRI_NATIVE_PARAM: &str = "plonky3-fri-high-arity-r1-f8-q169-qp16-bp10-johnson100";
 
-/// Canonical result identity for the fold-4 Plonky3 STIR benchmark profile,
-/// including its 16-bit opening-batching grind.
-const PLONKY3_STIR_NATIVE_PARAM: &str = "plonky3-stir-cap100-r1-f4-maxpow20-bp16";
+/// Canonical result identity for the fold-16 Plonky3 STIR profile under the
+/// Johnson bound, including its 16-bit opening-batching grind.
+const PLONKY3_STIR_NATIVE_PARAM: &str = "plonky3-stir-johnson100-r1-f16-maxpow16-bp16";
 
 /// Canonical result identity for the Plonky3 WHIR profile over the octic
 /// KoalaBear challenge field under the Johnson bound.
@@ -392,8 +392,7 @@ impl HashSchemeId {
             | Self::AkitaFp128
             | Self::AkitaFp128Offload => "128-bit Module-SIS/ROM",
             Self::Plonky2Fri => "approx. 100-bit conjectural",
-            Self::Plonky3Fri => "100-bit Johnson",
-            Self::Plonky3Stir => "100-bit capacity",
+            Self::Plonky3Fri | Self::Plonky3Stir => "100-bit Johnson",
             Self::Whir | Self::FlockLigerito | Self::WhirProvekit => "128-bit RBR",
             Self::Binius64 => "96-bit UDR query",
             Self::Basefold => "100-bit UDR query",
@@ -765,6 +764,11 @@ mod tests {
         assert_ne!(PLONKY3_FRI_NATIVE_PARAM, "plonky3-fri-100");
         assert!(PLONKY3_FRI_NATIVE_PARAM.ends_with("johnson100"));
         assert_ne!(PLONKY3_STIR_NATIVE_PARAM, "plonky3-stir-100");
+        assert!(PLONKY3_STIR_NATIVE_PARAM.contains("johnson100"));
+        assert_eq!(
+            HashSchemeId::Plonky3Stir.security_label(),
+            "100-bit Johnson"
+        );
     }
 
     #[test]

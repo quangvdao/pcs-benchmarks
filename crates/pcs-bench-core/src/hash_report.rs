@@ -170,7 +170,7 @@ fn markdown_security_table() -> &'static str {
 | Akita | Planner-selected direct/offloaded schedules at each native prime | 128-bit Module-SIS and 128-bit classical-ROM transcript target |\n\
 | Plonky2 FRI | Standard recursion: rate 1/8, 28 queries, 16 work bits | Approximately 100-bit conjectural FRI estimate |\n\
 | Plonky3 FRI | Upstream new_benchmark_high_arity with 169 queries: rate 1/2, fold up to 8, 16 query-PoW bits, 10-bit batching grind | 100-bit proven Johnson-regime bound |\n\
-| Plonky3 STIR | Upstream PCS benchmark: rate 1/2, fold 4 throughout, at most 20 work bits per phase, 16-bit batching grind | 100-bit aggregate capacity/MCA target |\n\
+| Plonky3 STIR | Upstream PCS benchmark with the Johnson bound: rate 1/2, fold 16 throughout, at most 16 work bits per phase, 16-bit batching grind | 100-bit aggregate target, proven Johnson regime |\n\
 | Plonky3 WHIR | Upstream PCS benchmark profile with the Johnson bound: octic extension, rate 1/2, fold 4, 12 work bits | 128-bit round-by-round target, proven Johnson regime |\n\
 | Binius64 BaseFold | Product default: rate 1/2, 232 queries, SHA-256 | 96-bit unique-decoding query target |\n\
 | Flock Ligerito | Default Fast: rate 1/2, Johnson, two OOD checks, BLAKE3 | 128-bit round-by-round target |\n\
@@ -189,7 +189,7 @@ Scheme & Accepted profile & Security accounting \\\\\n\
 Akita & Planner-selected schedules at each native prime & 128-bit Module-SIS and classical-ROM target \\\\\n\
 Plonky2 FRI & Rate $1/8$, 28 queries, 16 work bits & $\\sim$100-bit conjectural FRI \\\\\n\
 Plonky3 FRI & Rate $1/2$, fold up to 8, 169 queries, 16 query-PoW bits, 10-bit batching grind & 100-bit proven Johnson \\\\\n\
-Plonky3 STIR & Rate $1/2$, fold 4 throughout, at most 20 work bits per phase, 16-bit batching grind & 100-bit aggregate capacity/MCA \\\\\n\
+Plonky3 STIR & Rate $1/2$, fold 16 throughout, Johnson bound, at most 16 work bits per phase, 16-bit batching grind & 100-bit aggregate, proven Johnson \\\\\n\
 Plonky3 WHIR & Octic extension, rate $1/2$, fold 4, Johnson bound, 12 work bits & 128-bit RBR, proven Johnson regime \\\\\n\
 Binius64 & Rate $1/2$, 232 queries, SHA-256 & 96-bit UDR query target \\\\\n\
 Flock & Default \\texttt{Fast}, BLAKE3 & 128-bit RBR \\\\\n\

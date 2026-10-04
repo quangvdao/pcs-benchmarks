@@ -76,11 +76,22 @@ profile whenever one exists. The five repaired profiles were remeasured on
   two-adicity 24: a rate-\(1/2\) univariate of \(\log_2 N>23\) is packed
   into height \(2^{23}\) and width \(2^{n-23}\) (footnote).
 - **Plonky3 STIR:** same pin and packing as FRI, using the upstream PCS
-  benchmark profile: rate \(1/2\), fold 4 throughout, with at most 20 work
-  bits per phase, a 16-bit opening-batching grind
-  (`with_batch_proof_of_work_bits(16)`), and Poseidon2.
-  The implementation validates an aggregate 100-bit target, conditional on
-  capacity list decoding and mutual correlated agreement at capacity.
+  benchmark profile with `SecurityAssumption::JohnsonBound` in place of the
+  capacity bound: rate \(1/2\), fold 16 throughout, at most 16 work bits per
+  phase, a 16-bit opening-batching grind
+  (`with_batch_proof_of_work_bits(16)`), and Poseidon2. The library validates
+  an aggregate 100-bit target under proven Johnson-regime list decoding and
+  mutual correlated agreement. At the pin its Johnson schedules do not price
+  the degree-correction batching term of each round (the capacity schedules
+  do), so the worker checks that term itself with the library's own
+  Johnson proximity-gap function and requests the smallest library security
+  level, 100 or above, whose schedule clears it; that level is 104 on every row of this
+  matrix and is recorded with each row. For packed rows the check uses the
+  single-polynomial schedule of the same height. Measured at \(\log_2 N\) 22
+  and 26, fold 16 proved about 25% faster than the upstream fold 4 and 10%
+  faster than fold 8, tied with fold 32 and had the smaller proof; work-bit
+  caps of 8, 12, and 16 tied on time and 16 had the smallest proof, while 20
+  and 24 were slower. Rate \(1/4\) was twice as slow at \(\log_2 N = 22\).
 - **WHIR (Plonky3):** `p3-whir`, 128-bit round-by-round target, the octic
   KoalaBear challenge field used by the upstream PCS benchmark, rate \(1/2\), folding
   factor 4 after a first-round fold large enough that the FFT stays inside
