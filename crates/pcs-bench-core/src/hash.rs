@@ -129,8 +129,8 @@ const PLONKY3_FRI_NATIVE_PARAM: &str = "plonky3-fri-new-benchmark-r1-f2-q100-qp1
 const PLONKY3_STIR_NATIVE_PARAM: &str = "plonky3-stir-cap100-r1-f4-maxpow20-bp16";
 
 /// Canonical result identity for the Plonky3 WHIR profile over the octic
-/// KoalaBear challenge field.
-const PLONKY3_WHIR_NATIVE_PARAM: &str = "whir-128-ext8";
+/// KoalaBear challenge field under the Johnson bound.
+const PLONKY3_WHIR_NATIVE_PARAM: &str = "whir-128-ext8-johnson";
 
 /// Plonky2 FRI log-inverse rate (`rho = 1/8`).
 pub const PLONKY2_FRI_RATE_BITS: usize = 3;
@@ -152,7 +152,9 @@ pub const WHIR_FOLDING_FACTOR: usize = 4;
 
 /// Starting WHIR grinding budget. The worker searches `[WHIR_POW_BITS, WHIR_MAX_POW_BITS]`
 /// independently (raising the budget also lowers the algebraic query target).
-pub const WHIR_POW_BITS: usize = 20;
+/// Under the Johnson bound, budgets of 0, 8, and 12 bits measured the same
+/// prover time and 12 bits gave the smallest proof; larger budgets were slower.
+pub const WHIR_POW_BITS: usize = 12;
 
 /// KoalaBear grinding limit: Fiat-Shamir grind requires `2^bits < q`.
 pub const WHIR_MAX_POW_BITS: usize = 30;

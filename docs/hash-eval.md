@@ -72,19 +72,24 @@ profile whenever one exists. The five repaired profiles were remeasured on
   The implementation validates an aggregate 100-bit target, conditional on
   capacity list decoding and mutual correlated agreement at capacity.
 - **WHIR (Plonky3):** `p3-whir`, 128-bit round-by-round target, the octic
-  KoalaBear challenge field used by the upstream PCS benchmark (the pinned
-  PCS rejects the quintic field at capacity because the initial claim
-  batching retains under 128 bits), rate \(1/2\), folding
+  KoalaBear challenge field used by the upstream PCS benchmark, rate \(1/2\), folding
   factor 4 after a first-round fold large enough that the FFT stays inside
   KoalaBear two-adicity 24. Later-round log-inverse rates are lowered just
   enough that `two_adic_generator` also stays inside that two-adicity.
-  The worker searches grinding budgets 20–30 independently (KoalaBear cannot
-  grind 31+ bits) and prefers capacity bound at rate \(1/2\). If that cannot
-  meet 128 bits within the grind limit, it tries the Johnson bound, then
-  unique decoding, and then rate \(1/4\). This is a first-valid
-  decoding-priority objective, not a measured minimum-latency search. At the
-  current pin every size on this matrix (\(\log_2 N\) 22–30) derives
-  capacity bound at rate \(1/2\) with a 20-bit budget.
+  The worker never selects the capacity bound, which rests on conjectured
+  proximity gaps. It searches grinding budgets 12–30 independently (KoalaBear
+  cannot grind 31+ bits) and prefers the Johnson bound at rate \(1/2\). If
+  that cannot meet 128 bits within the grind limit, it tries unique decoding,
+  and then rate \(1/4\). At the current pin every size on this matrix
+  (\(\log_2 N\) 22–30) derives the Johnson bound at rate \(1/2\) with a
+  12-bit budget. The 12-bit start was chosen by measurement at
+  \(\log_2 N\) 22 and 26: budgets 0, 8, and 12 had equal prover time within
+  noise, 12 gave the smallest proof of the three, and budgets of 16 and above,
+  rate \(1/4\), unique decoding, and the quintic field were slower. The
+  Johnson-regime proximity-gap and mutual-correlated-agreement bounds are
+  those implemented by `p3-whir` at the pin. The Poseidon2 digest has eight
+  KoalaBear elements, about 124 bits of collision resistance, which is below
+  the 128-bit algebraic target.
 - **Binius64 BaseFold:** \(\mathbb F_{2^{128}}\), rate \(1/2\), SHA-256,
   and the product-default 96-bit unique-decoding query target. The
   worker uses `OptimalPackedB128` and the upstream multithreaded,

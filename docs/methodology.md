@@ -123,12 +123,12 @@ rules that apply only to that table:
    Module-SIS and classical-ROM schedule targets. Plonky3 WHIR uses a 128-bit
    round-by-round target.
    WHIR uses Plonky3 `p3-whir` with `security_level=128` over the octic
-   KoalaBear challenge field of the upstream PCS benchmark. Capacity bound at
-   rate 1/2 is used when the derived grind fits 30 bits (KoalaBear); at the
-   current pin that holds for every size in this matrix with a 20-bit budget.
-   The worker still falls back to the Johnson bound and then unique decoding
-   if capacity cannot close 128 bits, and generated tables footnote
-   unique-decoding WHIR rows. Plonky2 uses its approximately 100-bit standard-recursion FRI
+   KoalaBear challenge field of the upstream PCS benchmark. The Johnson bound
+   at rate 1/2 is used when the derived grind fits 30 bits (KoalaBear); at the
+   current pin that holds for every size in this matrix with a 12-bit budget.
+   The worker falls back to unique decoding if the Johnson bound cannot close
+   128 bits, and generated tables footnote unique-decoding WHIR rows. The
+   capacity bound is never used. Plonky2 uses its approximately 100-bit standard-recursion FRI
    tuple. Plonky3 FRI uses the pinned upstream benchmark tuple, approximately
    113.744 bits under the pinned random-words estimate; STIR uses the upstream
    fold-4 PCS benchmark schedule with its 16-bit opening-batching grind and

@@ -180,7 +180,7 @@ pub struct HashRecord {
     pub log2_n: Option<u32>,
     /// Field label, for example `2^{32}-99` or `2^{31}-2^{24}+1`.
     pub field: String,
-    /// Implementation parameter name such as `fp32-dense` or `whir-capacity-128`.
+    /// Implementation parameter name such as `fp32-dense` or `whir-128-ext8-johnson`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub native_param: Option<String>,
     /// Worker thread count (1 or 8 in the headline table).

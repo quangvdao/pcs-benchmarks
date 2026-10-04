@@ -199,7 +199,7 @@ fn timed_whir(log2_n: u32) -> Result<WorkerOutput, String> {
     Ok(WorkerOutput {
         status: RunStatus::Ok,
         status_detail: Some(format!(
-            "statement=multilinear,distribution=full-field-uniform,point=transcript-extension,evaluation=proof-embedded,challenge_field=koalabear-ext8,soundness={:?},rate=1/{},pow_bits={},selection_objective=first-valid-capacity-johnson-unique",
+            "statement=multilinear,distribution=full-field-uniform,point=transcript-extension,evaluation=proof-embedded,challenge_field=koalabear-ext8,soundness={:?},rate=1/{},pow_bits={},selection_objective=first-valid-johnson-unique",
             derived.soundness,
             1usize << derived.starting_log_inv_rate,
             derived.pow_bits
@@ -246,8 +246,9 @@ fn derive_whir_config(log2_n: u32) -> Result<DerivedWhir, String> {
     for starting_log_inv_rate in [WHIR_STARTING_LOG_INV_RATE, 2] {
         let folding_factor = whir_folding_factor(log2_n, starting_log_inv_rate);
         let round_log_inv_rates = whir_round_log_inv_rates_with_rate(log2_n, starting_log_inv_rate);
+        // Proven regimes only. The capacity bound rests on conjectured
+        // proximity gaps and is never selected.
         for soundness in [
-            SecurityAssumption::CapacityBound,
             SecurityAssumption::JohnsonBound,
             SecurityAssumption::UniqueDecoding,
         ] {

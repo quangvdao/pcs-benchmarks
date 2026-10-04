@@ -171,7 +171,7 @@ fn markdown_security_table() -> &'static str {
 | Plonky2 FRI | Standard recursion: rate 1/8, 28 queries, 16 work bits | Approximately 100-bit conjectural FRI estimate |\n\
 | Plonky3 FRI | Upstream new_benchmark: rate 1/2, 100 queries, 16 query-PoW bits | 113.744-bit conjectural random-words estimate |\n\
 | Plonky3 STIR | Upstream PCS benchmark: rate 1/2, fold 4 throughout, at most 20 work bits per phase, 16-bit batching grind | 100-bit aggregate capacity/MCA target |\n\
-| Plonky3 WHIR | Upstream PCS benchmark profile: octic extension, rate 1/2, fold 4, capacity bound, 20 work bits | 128-bit round-by-round target under the pinned model |\n\
+| Plonky3 WHIR | Upstream PCS benchmark profile with the Johnson bound: octic extension, rate 1/2, fold 4, 12 work bits | 128-bit round-by-round target, proven Johnson regime |\n\
 | Binius64 BaseFold | Product default: rate 1/2, 232 queries, SHA-256 | 96-bit unique-decoding query target |\n\
 | Flock Ligerito | Default Fast: rate 1/2, Johnson, two OOD checks, BLAKE3 | 128-bit round-by-round target |\n\
 | WorldFnd WHIR | CLI defaults: rate 1/2, fold 4, Johnson, BLAKE3 | 128-bit round-by-round target |\n\
@@ -190,7 +190,7 @@ Akita & Planner-selected schedules at each native prime & 128-bit Module-SIS and
 Plonky2 FRI & Rate $1/8$, 28 queries, 16 work bits & $\\sim$100-bit conjectural FRI \\\\\n\
 Plonky3 FRI & Rate $1/2$, 100 queries, 16 query-PoW bits & 113.744-bit conjectural random-words \\\\\n\
 Plonky3 STIR & Rate $1/2$, fold 4 throughout, at most 20 work bits per phase, 16-bit batching grind & 100-bit aggregate capacity/MCA \\\\\n\
-Plonky3 WHIR & Octic extension, rate $1/2$, fold 4, capacity bound, 20 work bits & 128-bit RBR under pinned model \\\\\n\
+Plonky3 WHIR & Octic extension, rate $1/2$, fold 4, Johnson bound, 12 work bits & 128-bit RBR, proven Johnson regime \\\\\n\
 Binius64 & Rate $1/2$, 232 queries, SHA-256 & 96-bit UDR query target \\\\\n\
 Flock & Default \\texttt{Fast}, BLAKE3 & 128-bit RBR \\\\\n\
 WorldFnd & Rate $1/2$, fold 4, Johnson, BLAKE3 & 128-bit RBR \\\\\n\
@@ -441,7 +441,8 @@ mod tests {
         assert!(report.contains("AVX-512F"));
         assert!(report.contains("native"));
         assert!(report.contains("128-bit"));
-        assert!(report.contains("capacity bound"));
+        assert!(report.contains("Johnson bound: octic extension"));
+        assert!(!report.contains("capacity bound"));
         assert!(report.contains("WHIR"));
         assert!(report.contains("BaseFold"));
         assert!(report.contains("113.744-bit conjectural random-words"));
