@@ -1,21 +1,103 @@
 Combined lattice-x86_64 dataset
 records.jsonl is the authoritative per-observation provenance.
-Akita refreshed with upstream c0cb822f on 2026-09-16/17; other schemes retain their existing measurements.
-No claim of contemporaneous measurement across cohorts.
+All cohorts were measured on 2026-10-03/04 on one host (AMD Ryzen 9 9950X); each scheme ran alone.
+Akita is pinned to 12d486b0 (dev, dev-protocol schedules).
 
 records=220
-records_sha256=7f966f4ccfed363b15ccd856589fd5308de8b45dedd4cf455437de71c4a7a8e4
+records_sha256=8915b364c21f8512ae454c6ebb22fe161db78b7beccce47ae437e3f0e4a5e0a5
 
 [cohort 1]
-harness_revision=73a2419125aa53e13acb962b7eb4c3d5fc716ccc
-timestamp_utc=2026-09-14T01:17:52Z
-run_command=target/release/pcs-bench lattice-eval run --out results-lattice-x86_64-final
-schemes=greyhound,rokoko
+harness_revision=869d11fc4224699b2b4aaee6d73552aa65c0c2c6+dirty.8ad711aff62e
+timestamp_utc=2026-10-04T01:16:34Z
+run_command=target/release/pcs-bench lattice-eval run --scheme akita,akita-offload --payload 27,29,31,33,35 --runs 10 --warmups 1 --seed-mode vary --out run-akita-lattice
+rustc_version=rustc 1.95.0 (59807616e 2026-04-14)
+binary: rustc
+commit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860
+commit-date: 2026-04-14
+host: x86_64-unknown-linux-gnu
+release: 1.95.0
+LLVM version: 22.1.2
+target=Linux x86_64
+cpu_model=AMD Ryzen 9 9950X 16-Core Processor
+cpu_scaling_driver=amd-pstate-epp
+cpu_governor=powersave
+cpu_energy_preference=balance_performance
+machine_id_hash=e99e4755064c91d7
+threads=1
+rustflags=-C target-cpu=native
+avx512=true
+isa_notes=AVX-512F advertised; native-target code generation requested
+logical_cpus=32
+memory_bytes=200061865984
+memory_limit_bytes=180055679385
+seed_mode=vary
+akita=https://github.com/LayerZero-Labs/akita/commit/12d486b0bca2814956d480aa121130e2702f8612
+akita_offload=https://github.com/LayerZero-Labs/akita/commit/12d486b0bca2814956d480aa121130e2702f8612
+greyhound=https://github.com/LayerZero-Labs/greyhound-reference/commit/672e74100496f6ef698ba35e241cf7593e3d57af
+rokoko=https://github.com/lattice-arguments/rokoko/commit/5caba472334f7764645ea2c7c5d612353a670121
+schemes=akita,akita_offload
 records=110
 
 [cohort 2]
-harness_revision=add6dc0eeee27d744ee72a78195d1eca5a7d1549
-timestamp_utc=2026-09-17T00:53:45Z
-run_command=target/release/pcs-bench lattice-eval run --scheme akita,akita-offload --payload 27,29,31,33,35 --runs 10 --warmups 1 --seed-mode vary --out results/lattice-x86_64
-schemes=akita,akita_offload
-records=110
+harness_revision=89deca6479f94cbd892e43a0b3bc04ee4356b340+dirty.f1414c1a2378
+timestamp_utc=2026-10-03T22:15:56Z
+run_command=target/release/pcs-bench lattice-eval run --scheme greyhound --payload 27,29,31,33,35 --runs 10 --warmups 1 --seed-mode vary --out run-greyhound
+rustc_version=rustc 1.95.0 (59807616e 2026-04-14)
+binary: rustc
+commit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860
+commit-date: 2026-04-14
+host: x86_64-unknown-linux-gnu
+release: 1.95.0
+LLVM version: 22.1.2
+target=Linux x86_64
+cpu_model=AMD Ryzen 9 9950X 16-Core Processor
+cpu_scaling_driver=amd-pstate-epp
+cpu_governor=powersave
+cpu_energy_preference=balance_performance
+machine_id_hash=e99e4755064c91d7
+threads=1
+rustflags=-C target-cpu=native
+avx512=true
+isa_notes=AVX-512F advertised; native-target code generation requested
+logical_cpus=32
+memory_bytes=200061865984
+memory_limit_bytes=180055679385
+seed_mode=vary
+akita=https://github.com/LayerZero-Labs/akita/commit/5d765c9a862aaef8296bf3ac0f4f3dee25fb5051
+akita_offload=https://github.com/LayerZero-Labs/akita/commit/5d765c9a862aaef8296bf3ac0f4f3dee25fb5051
+greyhound=https://github.com/LayerZero-Labs/greyhound-reference/commit/672e74100496f6ef698ba35e241cf7593e3d57af
+rokoko=https://github.com/lattice-arguments/rokoko/commit/26d07c73c54872b9e8d2b3200117a6a0a21b10ee
+schemes=greyhound
+records=55
+
+[cohort 3]
+harness_revision=b42afcf4c0bffdf00e219a75612704b449c19660+dirty.ccdb638b0a02
+timestamp_utc=2026-10-04T02:47:27Z
+run_command=target/release/pcs-bench lattice-eval run --scheme rokoko --payload 27,29,31,33,35 --runs 10 --warmups 1 --seed-mode vary --out run-rokoko
+rustc_version=rustc 1.95.0 (59807616e 2026-04-14)
+binary: rustc
+commit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860
+commit-date: 2026-04-14
+host: x86_64-unknown-linux-gnu
+release: 1.95.0
+LLVM version: 22.1.2
+target=Linux x86_64
+cpu_model=AMD Ryzen 9 9950X 16-Core Processor
+cpu_scaling_driver=amd-pstate-epp
+cpu_governor=powersave
+cpu_energy_preference=balance_performance
+machine_id_hash=e99e4755064c91d7
+threads=1
+rustflags=-C target-cpu=native
+avx512=true
+isa_notes=AVX-512F advertised; native-target code generation requested
+logical_cpus=32
+memory_bytes=200061865984
+memory_limit_bytes=180055679385
+seed_mode=vary
+akita=https://github.com/LayerZero-Labs/akita/commit/12d486b0bca2814956d480aa121130e2702f8612
+akita_offload=https://github.com/LayerZero-Labs/akita/commit/12d486b0bca2814956d480aa121130e2702f8612
+greyhound=https://github.com/LayerZero-Labs/greyhound-reference/commit/672e74100496f6ef698ba35e241cf7593e3d57af
+rokoko=https://github.com/lattice-arguments/rokoko/commit/5caba472334f7764645ea2c7c5d612353a670121
+schemes=rokoko
+records=55
