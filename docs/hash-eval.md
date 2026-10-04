@@ -29,6 +29,29 @@ The harness now prefers the pinned implementation's product or PCS-benchmark
 profile whenever one exists. The five repaired profiles were remeasured on
 2026-09-16. Unchanged schemes retain their original measurements.
 
+**Proven regimes only.** No row may rely on conjectured soundness: no list
+decoding or proximity gaps up to capacity, and no conjectured FRI query
+bound. Every hash-based row runs in unique decoding or in the Johnson
+regime, and its stated bit target is met by the bound that is proven for
+that regime. Where an upstream preset reaches its target only under a
+conjecture, the profile keeps the preset's shape and takes the query count
+or regime from the implementation's own proven-bound calculator; where the
+implementation ships none, the bound is derived in the worker with its
+source stated. Workers recompute the bound and fail closed. Free choices
+inside the proven regime (rate, folding arity, grinding) were measured at
+\(\log_2 N\) 22 and 26 on 1 and 8 threads and chosen by prover time, with
+proof size as the tie-breaker. Rows recorded under an earlier profile carry
+a different parameter identity and are reported as pending until remeasured.
+
+Two limits of "proven" are worth stating. The Johnson-regime rows of
+Plonky3 (FRI, STIR, WHIR), WorldFnd WHIR, and Flock rest on the
+proximity-gap and mutual-correlated-agreement theorems their libraries cite
+(the BCIKS20 line and its 2025–26 refinements); the harness checks that the
+library's calculator closes the target and does not re-derive those
+theorems. And the 8-element KoalaBear Poseidon2 digest has about 124 bits
+of collision resistance, so the 128-bit Plonky3 WHIR target is a statement
+about the interactive oracle proof, not about the Merkle commitment.
+
 - **Akita:** generated planner schedules at the native 32-, 64-, and 128-bit
   primes, with uniform full-field coefficients and uniform extension-field
   opening points. The PCS commitment payload is 128 bytes; the larger
